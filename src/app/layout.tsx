@@ -5,7 +5,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Waitlist Studio",
+  title: "Projekt Notify",
   description: "Create beautiful waitlists for all your products in one place.",
 };
 
@@ -26,7 +26,7 @@ export default function RootLayout({
                   <div className="flex items-center gap-2">
                   <div className="h-7 w-7 rounded-xl bg-gradient-to-tr from-indigo-500 via-sky-400 to-emerald-400 shadow" />
                   <span className="bg-gradient-to-r from-indigo-300 via-sky-200 to-emerald-200 bg-clip-text text-sm font-semibold text-transparent">
-                    Waitlist Studio
+                    Projekt Notify
                   </span>
                 </div>
                 </Link>
@@ -48,8 +48,8 @@ export default function RootLayout({
 
             <footer className="border-t border-white/10 bg-black/40">
               <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4 text-xs text-slate-400">
-                <span>© {new Date().getFullYear()} Waitlist Studio</span>
-                <span>Built by you · Reusable for all your SaaS ideas</span>
+                <span>© {new Date().getFullYear()} Projekt Notify</span>
+                <span>Built by <Link href={"//justaman045.vercel.app"} target="_blank"> Aman </Link> · Reusable for all your SaaS ideas</span>
               </div>
             </footer>
           </div>

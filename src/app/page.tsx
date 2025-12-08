@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { createSupabaseBrowserClient } from "@/lib/supabaseClient";
 
 type Project = {
@@ -8,121 +9,241 @@ type Project = {
   name: string;
   slug: string;
   short_description: string | null;
+  is_active: boolean;
+};
+
+type ProfileCache = {
+  github: {
+    name: string;
+    bio: string;
+    avatar: string;
+    repos: number;
+    followers: number;
+    url: string;
+  };
+  linkedin: {
+    title: string;
+    description: string;
+    avatar: string;
+    url: string;
+  };
 };
 
 export default function HomePage() {
+  const supabase = createSupabaseBrowserClient();
+
   const [projects, setProjects] = useState<Project[]>([]);
+  const [totalSignups, setTotalSignups] = useState<number | null>(null);
+  const [profile, setProfile] = useState<ProfileCache | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Load projects, signups, profile
   useEffect(() => {
     const load = async () => {
-      const supabase = createSupabaseBrowserClient();
-      const { data } = await supabase
+      setLoading(true);
+
+      // 1. Load active projects
+      const { data: projData } = await supabase
         .from("projects")
-        .select("id, name, slug, short_description")
+        .select("id, name, slug, short_description, is_active")
         .eq("is_active", true)
         .order("created_at", { ascending: false });
-      setProjects(data ?? []);
+
+      setProjects(projData ?? []);
+
+      // 2. Load signup count
+      const { count } = await supabase
+        .from("waitlist_entries")
+        .select("id", { count: "exact", head: true });
+
+      setTotalSignups(count ?? 0);
+
+      // 3. Load cached profile data (GitHub + LinkedIn)
+      const { data: profileData } = await supabase
+        .from("profile_cache")
+        .select("github, linkedin")
+        .eq("id", 1)
+        .single();
+
+      setProfile(profileData);
+
       setLoading(false);
     };
+
     load();
   }, []);
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-10">
-      <section className="mb-10 grid gap-8 md:grid-cols-[3fr,2fr] items-center">
-        <div>
-          <p className="mb-3 inline-flex items-center rounded-full border border-emerald-500/40 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-100">
-            🚀 Launch-ready waitlists for all your products
-          </p>
-          <h1 className="mb-4 text-3xl font-semibold tracking-tight md:text-4xl">
-            Central hub for all your{" "}
-            <span className="bg-gradient-to-r from-sky-400 to-emerald-300 bg-clip-text text-transparent">
-              SaaS waitlists
-            </span>
-          </h1>
-          <p className="mb-6 text-sm text-slate-300">
-            Spin up a new waitlist in seconds, collect emails, share referral
-            links, and keep all your upcoming apps under one clean dashboard.
-          </p>
-          <div className="flex flex-wrap gap-3 text-sm">
-            <a
-              href="/dashboard"
-              className="rounded-xl bg-sky-500 px-4 py-2 font-medium text-slate-950 shadow hover:bg-sky-400"
-            >
-              Open dashboard
-            </a>
-            <a
-              href="#projects"
-              className="rounded-xl border border-white/15 px-4 py-2 text-slate-100 hover:bg-white/5"
-            >
-              View public waitlists
-            </a>
-          </div>
-        </div>
-        <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-slate-900/80 via-slate-900/40 to-sky-900/60 p-4 shadow-xl">
-          <p className="mb-3 text-xs font-medium text-slate-300">
-            Snapshot (demo)
-          </p>
-          <div className="space-y-3 text-xs">
-            <div className="flex items-center justify-between rounded-2xl bg-black/30 px-3 py-2">
-              <span className="text-slate-300">Projects</span>
-              <span className="font-semibold text-emerald-300">
-                {loading ? "…" : projects.length}
-              </span>
-            </div>
-            <div className="flex items-center justify-between rounded-2xl bg-black/30 px-3 py-2">
-              <span className="text-slate-300">Total signups</span>
-              <span className="font-semibold text-sky-300">Soon</span>
-            </div>
-            <div className="flex items-center justify-between rounded-2xl bg-black/30 px-3 py-2">
-              <span className="text-slate-300">Referral tracking</span>
-              <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-semibold text-emerald-200">
-                Enabled
-              </span>
-            </div>
-          </div>
-        </div>
-      </section>
+    <div className="max-w-6xl mx-auto px-4 py-16 text-sm text-slate-200">
 
-      <section id="projects" className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-slate-100">Live waitlists</h2>
-          <span className="text-xs text-slate-400">
-            Each project gets its own unique link.
-          </span>
+      {/* HERO SECTION */}
+      <div className="text-center mb-16">
+        <div className="inline-block px-4 py-1 mb-4 text-xs text-emerald-300 rounded-full border border-emerald-500/40 bg-emerald-500/10">
+          🚀 Launch-ready waitlists for all Aman's SaaS products
         </div>
 
-        {loading ? (
-          <p className="text-xs text-slate-400">Loading projects…</p>
-        ) : projects.length === 0 ? (
-          <p className="text-xs text-slate-400">
-            No public projects yet. Create one from the dashboard.
-          </p>
+        <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 leading-tight">
+          Central hub for all Aman's{" "}
+          <span className="text-sky-400">SaaS waitlists</span>
+        </h1>
+
+        <p className="text-slate-400 max-w-xl mx-auto mb-8">
+          Manage all Aman's app waitlists, collect signups, track referrals, and 
+          send launch emails — all from one unified dashboard.
+        </p>
+
+        <div className="flex justify-center gap-3">
+          <Link
+            href="/dashboard"
+            className="px-5 py-2 rounded-lg bg-sky-500 hover:bg-sky-400 text-black text-sm font-semibold"
+          >
+            Open dashboard
+          </Link>
+
+          <Link
+            href="/public"
+            className="px-5 py-2 rounded-lg border border-white/10 hover:bg-white/5 text-sm"
+          >
+            View public waitlists
+          </Link>
+        </div>
+      </div>
+
+      {/* SNAPSHOT */}
+      <div className="mb-20 rounded-2xl border border-white/10 bg-black/30 p-6 shadow-xl">
+        <h2 className="text-lg font-semibold text-slate-100 mb-4">
+          Snapshot
+        </h2>
+
+        <div className="grid sm:grid-cols-3 gap-6">
+          <div className="rounded-xl border border-white/10 bg-black/40 p-4">
+            <p className="text-xs text-slate-400">Projects</p>
+            <p className="text-xl font-semibold text-sky-300">
+              {projects.length}
+            </p>
+          </div>
+
+          <div className="rounded-xl border border-white/10 bg-black/40 p-4">
+            <p className="text-xs text-slate-400">Total signups</p>
+            <p className="text-xl font-semibold text-emerald-300">
+              {totalSignups ?? "…"}
+            </p>
+          </div>
+
+          <div className="rounded-xl border border-white/10 bg-black/40 p-4">
+            <p className="text-xs text-slate-400">Referral tracking</p>
+            <p className="text-xl font-semibold text-blue-300">Enabled</p>
+          </div>
+        </div>
+      </div>
+
+      {/* PUBLIC WAITLISTS */}
+      <div className="mb-20">
+        <h2 className="text-2xl font-semibold text-white mb-4">
+          Live waitlists
+        </h2>
+
+        {projects.length === 0 ? (
+          <p className="text-slate-400">No live waitlists yet.</p>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid md:grid-cols-2 gap-6">
             {projects.map((p) => (
-              <a
+              <div
                 key={p.id}
-                href={`/p/${p.slug}`}
-                className="group rounded-2xl border border-white/10 bg-black/30 p-4 text-sm shadow hover:border-sky-400/60 hover:bg-black/50"
+                className="p-5 rounded-2xl border border-white/10 bg-black/30 hover:border-sky-400/40 transition"
               >
-                <div className="mb-2 flex items-center justify-between gap-2">
-                  <h3 className="font-medium text-slate-50 group-hover:text-sky-100">
-                    {p.name}
-                  </h3>
-                  <span className="rounded-full bg-sky-500/10 px-2 py-0.5 text-[10px] text-sky-200">
-                    Join waitlist
-                  </span>
-                </div>
-                <p className="text-xs text-slate-300">
-                  {p.short_description ?? "Join the early access list."}
+                <p className="text-lg font-medium text-slate-100">{p.name}</p>
+                <p className="text-xs text-slate-400 mt-2 mb-4">
+                  {p.short_description || "No description provided."}
                 </p>
-              </a>
+
+                <div className="flex justify-between items-center">
+                  <p className="text-[11px] text-slate-500">
+                    Public waitlist available
+                  </p>
+
+                  <Link
+                    href={`/p/${p.slug}`}
+                    className="text-xs rounded-full border border-sky-500/40 px-3 py-1 text-sky-300 hover:bg-sky-500/10"
+                  >
+                    Join waitlist
+                  </Link>
+                </div>
+              </div>
             ))}
           </div>
         )}
-      </section>
+      </div>
+
+      {/* ABOUT THE CREATOR */}
+      <div className="mt-20 border-t border-white/10 pt-12 pb-24">
+        <h2 className="text-2xl font-semibold text-white mb-4">
+          About the creator
+        </h2>
+
+        {!profile ? (
+          <p className="text-slate-400 text-sm">Loading profile…</p>
+        ) : (
+          <div className="flex flex-col md:flex-row gap-10">
+            {/* GITHUB */}
+            <div className="flex items-start gap-4">
+              <img
+                src={profile.github.avatar}
+                className="w-20 h-20 rounded-full border border-white/20"
+              />
+
+              <div>
+                <p className="text-lg font-semibold text-slate-100">
+                  {profile.github.name}
+                </p>
+                <p className="text-xs text-slate-400 mb-2">
+                  {profile.github.bio}
+                </p>
+
+                <div className="text-[11px] text-slate-500 space-y-1">
+                  <p>Repos: {profile.github.repos}</p>
+                  <p>Followers: {profile.github.followers}</p>
+                </div>
+
+                <a
+                  href={profile.github.url}
+                  target="_blank"
+                  className="inline-block mt-3 px-3 py-1 border border-white/10 rounded-full text-xs hover:bg-white/5"
+                >
+                  View GitHub →
+                </a>
+              </div>
+            </div>
+
+            {/* LINKEDIN */}
+            <div className="flex items-start gap-4">
+              {profile.linkedin.avatar && (
+                <img
+                  src={profile.linkedin.avatar}
+                  className="w-20 h-20 rounded-full border border-white/20"
+                />
+              )}
+
+              <div>
+                <p className="text-lg font-semibold text-slate-100">
+                  {profile.linkedin.title }
+                </p>
+                <p className="text-xs text-slate-400 mb-2 max-w-xs leading-relaxed">
+                  {profile.linkedin.description}
+                </p>
+
+                <a
+                  href={profile.linkedin.url}
+                  target="_blank"
+                  className="inline-block mt-3 px-3 py-1 border border-white/10 rounded-full text-xs hover:bg-white/5"
+                >
+                  View LinkedIn →
+                </a>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
