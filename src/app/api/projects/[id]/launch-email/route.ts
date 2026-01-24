@@ -34,18 +34,33 @@ export async function POST(
       return NextResponse.json({ ok: true, sent: 0 });
     }
 
+    const fromEmail = process.env.LAUNCH_FROM_EMAIL || "onboarding@resend.dev";
+
     const { error: emailError } = await resend.emails.send({
-      from: process.env.LAUNCH_FROM_EMAIL!,
-      to: emails,
-      subject: `${project.name} is live!`,
+      from: fromEmail,
+      to: fromEmail, // Send to self so BCC works correctly for mass broadcast
+      bcc: emails,
+      subject: `🚀 ${project.name} is Now Live!`,
       html: `
-        <h1>${project.name} is live 🚀</h1>
-        <p>Thank you for joining the waitlist.</p>
-        <p>You now have early access. Visit the app to get started.</p>
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 40px; border-radius: 20px; background-color: #f8fafc; border: 1px solid #e2e8f0;">
+          <h1 style="color: #0f172a; margin-bottom: 24px; font-size: 24px; font-weight: 700;">${project.name} is officially live</h1>
+          <p style="color: #475569; font-size: 16px; line-height: 1.6;">Thank you for your patience and for being part of our exclusive waitlist. We're excited to announce that you now have priority access.</p>
+          <div style="margin: 32px 0;">
+            <a href="${process.env.NEXT_PUBLIC_SITE_URL}/p/${project.slug}" 
+               style="background-color: #0284c7; color: white; padding: 14px 28px; border-radius: 12px; text-decoration: none; font-weight: 600; display: inline-block;">
+               Visit Project Showcase
+            </a>
+          </div>
+          <p style="color: #64748b; font-size: 14px;">If the button above doesn't work, copy and paste this link into your browser:</p>
+          <p style="color: #0284c7; font-size: 14px;">${process.env.NEXT_PUBLIC_SITE_URL}/p/${project.slug}</p>
+          <hr style="margin: 40px 0; border: 0; border-top: 1px solid #e2e8f0;" />
+          <p style="color: #94a3b8; font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em;">© 2024 Modern SaaS Architecture</p>
+        </div>
       `,
     });
 
     if (emailError) {
+      console.error("Resend Error:", emailError);
       return NextResponse.json(
         { error: emailError.message },
         { status: 500 }

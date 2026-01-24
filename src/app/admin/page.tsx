@@ -131,12 +131,12 @@ export default function AdminDashboardPage() {
         {/* HEADER: COMPACT STRATEGIC BAR */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-16">
           <div className="flex items-center gap-6">
-            <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-xl shadow-xl backdrop-blur-2xl">
+            <div className="w-12 h-12 rounded-2xl bg-foreground/5 border border-card-border flex items-center justify-center text-xl shadow-xl backdrop-blur-2xl">
               📊
             </div>
             <div>
-              <h1 className="text-3xl font-bold tracking-tight text-white leading-none">Dashboard</h1>
-              <p className="text-white/30 text-[10px] uppercase tracking-[0.2em] font-semibold mt-2.5 flex items-center gap-2">
+              <h1 className="text-3xl font-bold tracking-tight text-foreground leading-none">Dashboard</h1>
+              <p className="text-foreground/50 text-[10px] uppercase tracking-[0.2em] font-semibold mt-2.5 flex items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-accent-emerald shadow-[0_0_8px_rgba(16,185,129,0.4)]" />
                 Waitlist Engine: Online
               </p>
@@ -150,16 +150,16 @@ export default function AdminDashboardPage() {
             >
               <span>+</span> Create Project
             </button>
-            <div className="flex bg-white/[0.03] border border-white/5 rounded-2xl p-1 backdrop-blur-3xl">
+            <div className="flex bg-foreground/[0.03] border border-card-border rounded-2xl p-1 backdrop-blur-3xl">
               <button
                 onClick={() => router.push("/admin/subscribers")}
-                className="px-5 py-2 rounded-xl hover:bg-white/5 text-white/50 hover:text-white text-[10px] font-bold uppercase tracking-widest transition-all"
+                className="px-5 py-2 rounded-xl hover:bg-foreground/5 text-foreground/70 hover:text-foreground text-[10px] font-bold uppercase tracking-widest transition-all"
               >
                 Subscribers
               </button>
               <button
                 onClick={() => router.push("/admin/analytics")}
-                className="px-5 py-2 rounded-xl hover:bg-white/5 text-white/50 hover:text-white text-[10px] font-bold uppercase tracking-widest transition-all"
+                className="px-5 py-2 rounded-xl hover:bg-foreground/5 text-foreground/70 hover:text-foreground text-[10px] font-bold uppercase tracking-widest transition-all"
               >
                 Analytics
               </button>
@@ -185,15 +185,15 @@ export default function AdminDashboardPage() {
             { label: "Drafts", value: devProjects.length, icon: "🏗️", color: "from-orange-500/20", unit: "Internal" },
             { label: "Total Projects", value: projects.length, icon: "📁", color: "from-purple-500/20", unit: "Total" },
           ].map((stat, i) => (
-            <div key={i} className="glass p-7 rounded-[2.5rem] relative overflow-hidden group border-white/5 transition-all">
+            <div key={i} className="glass p-7 rounded-[2.5rem] relative overflow-hidden group border-card-border transition-all">
               <div className={`absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl ${stat.color} to-transparent opacity-10 blur-xl group-hover:scale-150 transition-transform duration-1000`} />
               <div className="flex items-center gap-3 mb-5">
                 <span className="text-xl opacity-40 group-hover:opacity-100 transition-opacity">{stat.icon}</span>
-                <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/30">{stat.label}</h3>
+                <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-foreground/50">{stat.label}</h3>
               </div>
               <div className="flex items-baseline gap-2">
-                <p className="text-4xl font-bold text-white tracking-tight">{stat.value}</p>
-                <span className="text-[8px] text-white/10 font-bold uppercase tracking-widest">{stat.unit}</span>
+                <p className="text-4xl font-bold text-foreground tracking-tight">{stat.value}</p>
+                <span className="text-[8px] text-foreground/30 font-bold uppercase tracking-widest">{stat.unit}</span>
               </div>
             </div>
           ))}
@@ -205,8 +205,8 @@ export default function AdminDashboardPage() {
           {/* PROJECT MANAGEMENT */}
           <section className="space-y-8">
             <div className="flex items-center justify-between px-4">
-              <h2 className="text-xl font-bold text-white tracking-tight">Project Management</h2>
-              <div className="h-[2px] flex-1 bg-gradient-to-r from-white/10 to-transparent mx-8 opacity-50" />
+              <h2 className="text-xl font-bold text-foreground tracking-tight">Project Management</h2>
+              <div className="h-[2px] flex-1 bg-gradient-to-r from-foreground/10 to-transparent mx-8 opacity-50" />
             </div>
 
             {loadingProjects ? (
@@ -214,7 +214,7 @@ export default function AdminDashboardPage() {
                 {[1, 2, 3].map(i => <div key={i} className="h-32 glass rounded-3xl animate-pulse" />)}
               </div>
             ) : projects.length === 0 ? (
-              <div className="glass p-24 rounded-[3.5rem] text-center border-dashed border-white/10 opacity-30">
+              <div className="glass p-24 rounded-[3.5rem] text-center border-dashed border-card-border opacity-30">
                 <p className="text-[11px] font-bold uppercase tracking-[0.2em]">No projects found</p>
               </div>
             ) : (
@@ -222,17 +222,17 @@ export default function AdminDashboardPage() {
                 {projects.map((project) => (
                   <div
                     key={project.id}
-                    className="glass p-8 rounded-[3rem] hover:bg-white/[0.03] group flex flex-col sm:flex-row sm:items-center justify-between gap-8 border-l-4 transition-all overflow-hidden"
-                    style={{ borderLeftColor: project.is_active ? 'var(--accent-emerald)' : 'rgba(255,255,255,0.05)' }}
+                    className="glass p-8 rounded-[3rem] hover:bg-foreground/[0.03] group flex flex-col sm:flex-row sm:items-center justify-between gap-8 border-l-4 transition-all overflow-hidden"
+                    style={{ borderLeftColor: project.is_active ? 'var(--accent-emerald)' : 'var(--card-border)' }}
                   >
                     <div className="space-y-3">
                       <div className="flex items-center gap-4">
-                        <h3 className="text-2xl font-bold text-white transition-colors">{project.name}</h3>
-                        <span className={`px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest ${project.is_active ? 'bg-accent-emerald/10 text-accent-emerald border border-accent-emerald/20' : 'bg-white/5 text-white/20 border border-white/10'}`}>
+                        <h3 className="text-2xl font-bold text-foreground transition-colors">{project.name}</h3>
+                        <span className={`px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest ${project.is_active ? 'bg-accent-emerald/10 text-accent-emerald border border-accent-emerald/20' : 'bg-foreground/5 text-foreground/20 border border-card-border'}`}>
                           {project.is_active ? 'Live' : 'Draft'}
                         </span>
                       </div>
-                      <p className="text-[13px] text-white/40 font-normal leading-relaxed line-clamp-1 max-w-md">
+                      <p className="text-[13px] text-foreground/70 font-normal leading-relaxed line-clamp-1 max-w-md">
                         {project.short_description || "No project description available."}
                       </p>
                     </div>
@@ -240,14 +240,14 @@ export default function AdminDashboardPage() {
                     <div className="flex items_center gap-4">
                       <button
                         onClick={() => router.push(`/admin/${project.id}`)}
-                        className="h-12 px-8 rounded-2xl bg-white/5 border border-white/10 text-[10px] text-white/70 font-bold uppercase tracking-widest hover:bg-white hover:text-black hover:scale-[1.05] transition-all"
+                        className="h-12 px-8 rounded-2xl bg-foreground/5 border border-card-border text-[10px] text-foreground/70 font-bold uppercase tracking-widest hover:bg-foreground hover:text-background hover:scale-[1.05] transition-all"
                       >
                         Edit
                       </button>
                       <a
                         href={`/p/${project.slug}`}
                         target="_blank"
-                        className="w-12 h-12 rounded-2xl glass flex items-center justify-center hover:scale-110 transition-transform grayscale hover:grayscale-0 opacity-40 hover:opacity-100 border border-white/5"
+                        className="w-12 h-12 rounded-2xl glass flex items-center justify-center hover:scale-110 transition-transform grayscale hover:grayscale-0 opacity-40 hover:opacity-100 border border-card-border"
                         title="View Live Page"
                       >
                         🔗
@@ -263,33 +263,33 @@ export default function AdminDashboardPage() {
           <aside className="space-y-10">
 
             {/* REFERRAL LEADERBOARD (REFINED) */}
-            <div className="glass p-8 rounded-[3rem] bg-accent-sky/5 border-white/5 relative overflow-hidden">
+            <div className="glass p-8 rounded-[3rem] bg-accent-sky/5 border-card-border relative overflow-hidden">
               <div className="absolute top-0 right-0 w-24 h-24 bg-accent-sky/5 blur-3xl -z-10" />
 
               <div className="mb-10">
                 <h2 className="text-sm font-bold uppercase tracking-[0.25em] text-accent-sky">Top Advocates</h2>
-                <p className="text-white/20 text-[9px] uppercase tracking-widest font-bold mt-2">Referral Leaders</p>
+                <p className="text-foreground/40 text-[9px] uppercase tracking-widest font-bold mt-2">Referral Leaders</p>
               </div>
 
               <div className="space-y-3.5">
                 {loadingProjects ? (
-                  [1, 2, 3].map(i => <div key={i} className="h-14 glass bg-white/5 rounded-2xl animate-pulse" />)
+                  [1, 2, 3].map(i => <div key={i} className="h-14 glass bg-foreground/5 rounded-2xl animate-pulse" />)
                 ) : topReferrers.length === 0 ? (
-                  <p className="text-[9px] text-white/10 italic text-center py-8">Static noise...</p>
+                  <p className="text-[9px] text-foreground/30 italic text-center py-8">Static noise...</p>
                 ) : (
                   topReferrers.map((winner, i) => (
-                    <div key={i} className="flex items-center justify-between p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-white/10 transition-colors">
+                    <div key={i} className="flex items-center justify-between p-4 rounded-2xl bg-foreground/[0.02] border border-card-border hover:border-foreground/10 transition-colors">
                       <div className="flex items-center gap-4">
-                        <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black border ${i === 0 ? 'bg-accent-sky/10 border-accent-sky/20 text-accent-sky' : 'bg-white/5 border-white/5 text-white/20'}`}>
+                        <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black border ${i === 0 ? 'bg-accent-sky/10 border-accent-sky/20 text-accent-sky' : 'bg-foreground/5 border-card-border text-foreground/20'}`}>
                           {i + 1}
                         </div>
                         <div>
-                          <p className="text-[12px] font-bold text-white/80">{winner.name}</p>
-                          <p className="text-[9px] text-white/10 truncate max-w-[120px]">{winner.email}</p>
+                          <p className="text-[12px] font-bold text-foreground/80">{winner.name}</p>
+                          <p className="text-[9px] text-foreground/40 truncate max-w-[120px]">{winner.email}</p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <span className="text-lg font-black text-white tracking-widest leading-none">{winner.count}</span>
+                        <span className="text-lg font-black text-foreground tracking-widest leading-none">{winner.count}</span>
                         <p className="text-[7px] font-black text-accent-emerald uppercase mt-0.5">Points</p>
                       </div>
                     </div>
@@ -297,13 +297,13 @@ export default function AdminDashboardPage() {
                 )}
               </div>
 
-              <div className="mt-8 pt-6 border-t border-white/5 flex items-center justify-center">
-                <p className="text-[9px] text-white/5 font-bold uppercase tracking-[0.4em] leading-none">Insight Verified</p>
+              <div className="mt-8 pt-6 border-t border-card-border flex items-center justify-center">
+                <p className="text-[9px] text-foreground/5 font-bold uppercase tracking-[0.4em] leading-none">Insight Verified</p>
               </div>
             </div>
 
             {/* QUICK TIPS */}
-            <div className="glass p-8 rounded-[3rem] bg-white/[0.01] border-white/5">
+            <div className="glass p-8 rounded-[3rem] bg-foreground/[0.01] border-card-border">
               <h3 className="text-[10px] font-bold uppercase tracking-widest text-accent-emerald mb-6 flex items-center gap-3">
                 <span className="w-1.5 h-1.5 rounded-full bg-accent-emerald shadow-[0_0_8px_rgba(16,185,129,0.3)]" /> Usage Tips
               </h3>
@@ -313,7 +313,7 @@ export default function AdminDashboardPage() {
                   "Add FAQs to reduce user friction during signup.",
                   "Use the launch signal to notify users of progress.",
                 ].map((tip, i) => (
-                  <li key={i} className="text-[11px] text-white/30 font-normal leading-relaxed flex gap-3">
+                  <li key={i} className="text-[11px] text-foreground/60 font-normal leading-relaxed flex gap-3">
                     <span className="text-accent-emerald">•</span>
                     {tip}
                   </li>
@@ -324,8 +324,8 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* FOOTER */}
-        <div className="mt-40 pt-16 border-t border-white/5 text-center">
-          <p className="text-white/5 text-[9px] font-black uppercase tracking-[1em] italic">Projekt Notify Command Suite</p>
+        <div className="mt-40 pt-16 border-t border-card-border text-center">
+          <p className="text-foreground/5 text-[9px] font-black uppercase tracking-[1em] italic">Projekt Notify Command Suite</p>
         </div>
       </div>
     </div>

@@ -50,12 +50,19 @@ export default function RootLayout({
               {children}
             </main>
 
-            <footer className="border-t border-white/5 glass py-8">
-              <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4 text-[10px] text-white/20 tracking-widest uppercase font-medium">
-                <span>© 2026 Projekt Notify · One Build At A Time</span>
-                <Link href={"https://justaman045.vercel.app"} target="_blank" className="hover:text-accent-sky transition-colors">
-                  Designed by Aman
-                </Link>
+            <footer className="border-t border-white/5 glass py-12">
+              <div className="max-w-7xl mx-auto px-6 pt-16 border-t border-card-border">
+                <div className="flex flex-col md:flex-row justify-between items-center gap-8 mb-16">
+                  <div className="flex flex-col items-center md:items-start gap-2">
+                    <span className="text-xl font-black tracking-tighter text-foreground">PROJEKT<span className="text-accent-sky">.</span></span>
+                    <span className="text-[10px] font-bold text-foreground/30 uppercase tracking-[0.3em]">© 2024 Modern SaaS Architecture</span>
+                  </div>
+
+                  <div className="flex items-center gap-12">
+                    <Link href={"https://github.com/justaman045"} target="_blank" className="text-[10px] font-bold text-foreground/40 hover:text-accent-sky tracking-[0.2em] transition-colors uppercase">GITHUB</Link>
+                    <Link href={"https://justaman045.vercel.app"} target="_blank" className="text-[10px] font-bold text-foreground/40 hover:text-accent-sky tracking-[0.2em] transition-colors uppercase">Developed by Aman</Link>
+                  </div>
+                </div>
               </div>
             </footer>
           </div>

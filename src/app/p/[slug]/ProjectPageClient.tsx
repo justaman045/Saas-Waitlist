@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { db } from "@/lib/firebase";
 import { collection, query, where, getDocs, limit, addDoc, getCountFromServer, serverTimestamp, orderBy } from "firebase/firestore";
 
@@ -275,19 +276,19 @@ export default function ProjectPageClient({ slug }: Props) {
                 <div className="w-1.5 h-1.5 rounded-full bg-accent-sky shadow-[0_0_8px_rgba(56,189,248,0.5)]" />
                 <span className="text-accent-sky text-[10px] font-bold uppercase tracking-[0.2em]">Exclusive Early Access</span>
               </div>
-              <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-white leading-[1.1]">
+              <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-foreground leading-[1.1]">
                 {project.hero_title || `Discover ${project.name}`}
               </h1>
-              <p className="text-xl md:text-2xl text-white/50 font-medium leading-relaxed max-w-2xl border-l-4 border-accent-sky/20 pl-8 mt-8">
+              <p className="text-xl md:text-2xl text-foreground/70 font-medium leading-relaxed max-w-2xl border-l-4 border-accent-sky/20 pl-8 mt-8">
                 {project.hero_subtitle || project.short_description || "Empowering the next generation of digital excellence."}
               </p>
             </div>
 
             {project.full_description && (
               <div className="relative group">
-                <div className="glass p-10 rounded-[2.5rem] bg-white/[0.02] border-white/5 relative overflow-hidden backdrop-blur-3xl shadow-2xl">
+                <div className="glass p-10 rounded-[2.5rem] bg-foreground/[0.02] border-card-border relative overflow-hidden backdrop-blur-3xl shadow-2xl">
                   <div className="absolute -top-10 -right-10 w-32 h-32 bg-accent-sky/5 blur-3xl opacity-50" />
-                  <p className="text-white/70 leading-relaxed font-normal whitespace-pre-line text-sm md:text-lg">
+                  <p className="text-foreground/80 leading-relaxed font-normal whitespace-pre-line text-sm md:text-lg">
                     {project.full_description}
                   </p>
                 </div>
@@ -302,16 +303,16 @@ export default function ProjectPageClient({ slug }: Props) {
 
               <div className="mb-10 flex items-center justify-between px-2">
                 <div>
-                  <h2 className="text-2xl font-bold text-white tracking-tight">Reserve Your Spot</h2>
-                  <p className="text-white/30 text-[10px] uppercase tracking-[0.2em] font-semibold mt-2">Join the priority access list</p>
+                  <h2 className="text-2xl font-bold text-foreground tracking-tight">Reserve Your Spot</h2>
+                  <p className="text-foreground/30 text-[10px] uppercase tracking-[0.2em] font-semibold mt-2">Join the priority access list</p>
                 </div>
                 {state.status === "success" && (
                   <button
                     onClick={clearSession}
                     title="Change Account"
-                    className="w-10 h-10 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center hover:bg-white/10 transition-all group"
+                    className="w-10 h-10 rounded-xl bg-foreground/5 border border-card-border flex items-center justify-center hover:bg-foreground/10 transition-all group"
                   >
-                    <span className="text-white/40 group-hover:text-white transition-colors text-sm">🔄</span>
+                    <span className="text-foreground/40 group-hover:text-foreground transition-colors text-sm">🔄</span>
                   </button>
                 )}
               </div>
@@ -321,9 +322,9 @@ export default function ProjectPageClient({ slug }: Props) {
                   <div className="p-8 rounded-[2rem] bg-accent-emerald/5 border border-accent-emerald/20 shadow-inner">
                     <div className="w-16 h-16 rounded-2xl bg-accent-emerald/10 flex items-center justify-center text-3xl mx-auto lg:mx-0 mb-6 shadow-xl shadow-accent-emerald/10 border border-accent-emerald/20">✨</div>
                     <h3 className="text-accent-emerald font-bold uppercase tracking-widest text-xs mb-2">Registration Successful</h3>
-                    <p className="text-white/50 text-[11px] font-medium">
+                    <p className="text-foreground/70 text-[11px] font-medium">
                       You've secured your position in the waitlist.<br />
-                      Current Rank: <span className="text-white font-bold text-xl ml-1">#{state.position}</span>
+                      Current Rank: <span className="text-foreground font-bold text-xl ml-1">#{state.position}</span>
                     </p>
                   </div>
 
@@ -331,13 +332,13 @@ export default function ProjectPageClient({ slug }: Props) {
                     <div className="space-y-8">
                       <div className="space-y-4">
                         <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-accent-sky ml-2">Boost Your Rank</p>
-                        <div className="glass p-6 rounded-[2rem] bg-white/[0.03] border-accent-sky/10">
-                          <p className="text-[10px] text-white/40 mb-4 font-normal leading-relaxed text-center lg:text-left">Share your unique link. For every person who joins, you'll move up in line.</p>
+                        <div className="glass p-6 rounded-[2rem] bg-foreground/[0.03] border-accent-sky/10">
+                          <p className="text-[10px] text-foreground/60 mb-4 font-normal leading-relaxed text-center lg:text-left">Share your unique link. For every person who joins, you'll move up in line.</p>
                           <div className="relative group">
                             <input
                               readOnly
                               value={shareLink}
-                              className="w-full bg-black/40 border border-white/5 rounded-xl px-5 py-4 text-[10px] text-accent-sky font-mono transition-all group-hover:border-accent-sky/30 outline-none"
+                              className="w-full bg-background/40 border border-card-border rounded-xl px-5 py-4 text-[10px] text-accent-sky font-mono transition-all group-hover:border-accent-sky/30 outline-none"
                             />
                             <button
                               onClick={() => {
@@ -353,9 +354,9 @@ export default function ProjectPageClient({ slug }: Props) {
                       </div>
 
                       {/* REFERRAL NETWORK DISPLAY */}
-                      <div className="space-y-4 pt-8 border-t border-white/5">
+                      <div className="space-y-4 pt-8 border-t border-card-border">
                         <div className="flex items-center justify-between px-2">
-                          <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/30">Your Referrals</h4>
+                          <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-foreground/40">Your Referrals</h4>
                           <span className="px-3 py-1 rounded-full bg-accent-sky/10 text-accent-sky text-[9px] font-bold border border-accent-sky/20">{state.referrals?.length || 0}</span>
                         </div>
                         <div className="space-y-3">
@@ -366,7 +367,7 @@ export default function ProjectPageClient({ slug }: Props) {
                                   <div className="w-8 h-8 rounded-lg bg-accent-sky/10 border border-accent-sky/20 flex items-center justify-center text-[10px] text-accent-sky font-bold">
                                     {r.name.charAt(0)}
                                   </div>
-                                  <span className="text-[11px] font-medium text-white/60">
+                                  <span className="text-[11px] font-medium text-foreground/70">
                                     {r.name.split(' ').map(part => part.charAt(0) + '***').join(' ')} joined
                                   </span>
                                 </div>
@@ -374,8 +375,8 @@ export default function ProjectPageClient({ slug }: Props) {
                               </div>
                             ))
                           ) : (
-                            <div className="p-10 rounded-[2rem] border-2 border-dashed border-white/5 text-center bg-white/[0.01]">
-                              <p className="text-[11px] text-white/20 font-medium">No referrals yet. <br />Invite friends to skip the queue!</p>
+                            <div className="p-10 rounded-[2rem] border-2 border-dashed border-card-border text-center bg-foreground/[0.01]">
+                              <p className="text-[11px] text-foreground/40 font-medium">No referrals yet. <br />Invite friends to skip the queue!</p>
                             </div>
                           )}
                         </div>
@@ -386,24 +387,24 @@ export default function ProjectPageClient({ slug }: Props) {
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="space-y-3">
-                    <label className="text-[10px] uppercase tracking-[0.2em] font-bold text-white/30 ml-2">Full Name</label>
+                    <label className="text-[10px] uppercase tracking-[0.2em] font-bold text-foreground/40 ml-2">Full Name</label>
                     <input
                       required
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      className="w-full rounded-2xl border border-white/5 bg-white/5 px-6 py-4 text-sm text-white focus:border-accent-sky/30 focus:bg-white/10 outline-none transition-all placeholder:text-white/10 shadow-inner"
+                      className="w-full rounded-2xl border border-card-border bg-foreground/5 px-6 py-4 text-sm text-foreground focus:border-accent-sky/30 focus:bg-foreground/10 outline-none transition-all placeholder:text-foreground/20 shadow-inner"
                       placeholder="Jane Doe"
                     />
                   </div>
 
                   <div className="space-y-3">
-                    <label className="text-[10px] uppercase tracking-[0.2em] font-bold text-white/30 ml-2">Email Address</label>
+                    <label className="text-[10px] uppercase tracking-[0.2em] font-bold text-foreground/40 ml-2">Email Address</label>
                     <input
                       required
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full rounded-2xl border border-white/5 bg-white/5 px-6 py-4 text-sm text-white focus:border-accent-sky/30 focus:bg-white/10 outline-none transition-all placeholder:text-white/10 shadow-inner"
+                      className="w-full rounded-2xl border border-card-border bg-foreground/5 px-6 py-4 text-sm text-foreground focus:border-accent-sky/30 focus:bg-foreground/10 outline-none transition-all placeholder:text-foreground/20 shadow-inner"
                       placeholder="jane@example.com"
                     />
                   </div>
@@ -412,7 +413,7 @@ export default function ProjectPageClient({ slug }: Props) {
                     <button
                       type="submit"
                       disabled={state.status === "loading"}
-                      className="group w-full rounded-2xl bg-white py-5 text-[12px] font-bold uppercase tracking-[0.2em] text-black hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-white/5 disabled:opacity-50 flex items-center justify-center gap-3"
+                      className="group w-full rounded-2xl bg-foreground py-5 text-[12px] font-bold uppercase tracking-[0.2em] text-background hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-foreground/5 disabled:opacity-50 flex items-center justify-center gap-3"
                     >
                       {state.status === "loading" ? "Processing..." : (
                         <>
@@ -421,7 +422,7 @@ export default function ProjectPageClient({ slug }: Props) {
                         </>
                       )}
                     </button>
-                    <p className="text-center text-[10px] text-white/20 mt-6 font-semibold uppercase tracking-[0.1em]">
+                    <p className="text-center text-[10px] text-foreground/20 mt-6 font-semibold uppercase tracking-[0.1em]">
                       Be among the first to experience {project.name}.
                     </p>
                   </div>
@@ -442,16 +443,16 @@ export default function ProjectPageClient({ slug }: Props) {
           {project.features && project.features.length > 0 && (
             <section className="space-y-10">
               <div className="flex items-center gap-6">
-                <h2 className="text-3xl font-bold text-white tracking-tight">Core Features</h2>
-                <div className="h-[2px] flex-1 bg-gradient-to-r from-white/10 to-transparent" />
+                <h2 className="text-3xl font-bold text-foreground tracking-tight">Core Features</h2>
+                <div className="h-[2px] flex-1 bg-gradient-to-r from-foreground/10 to-transparent" />
               </div>
               <div className="grid gap-6">
                 {project.features.map((feature, i) => (
-                  <div key={i} className="glass p-8 rounded-[2rem] hover:bg-white/[0.03] border-white/5 flex gap-8 items-start group relative overflow-hidden transition-all duration-500">
-                    <div className="w-12 h-12 rounded-xl bg-accent-sky/5 border border-white/5 flex-shrink-0 flex items-center justify-center text-lg font-bold text-accent-sky shadow-inner group-hover:border-accent-sky/30 transition-all">
+                  <div key={i} className="glass p-8 rounded-[2rem] hover:bg-foreground/[0.03] border-card-border flex gap-8 items-start group relative overflow-hidden transition-all duration-500">
+                    <div className="w-12 h-12 rounded-xl bg-accent-sky/5 border border-card-border flex-shrink-0 flex items-center justify-center text-lg font-bold text-accent-sky shadow-inner group-hover:border-accent-sky/30 transition-all">
                       {i + 1}
                     </div>
-                    <p className="text-white/60 text-lg leading-relaxed font-normal py-1">{feature}</p>
+                    <p className="text-foreground/80 text-lg leading-relaxed font-normal py-1">{feature}</p>
                   </div>
                 ))}
               </div>
@@ -461,12 +462,12 @@ export default function ProjectPageClient({ slug }: Props) {
           {project.gallery && project.gallery.length > 0 && (
             <section className="space-y-10">
               <div className="flex items-center gap-6">
-                <h2 className="text-3xl font-bold text-white tracking-tight">Gallery</h2>
-                <div className="h-[2px] flex-1 bg-gradient-to-r from-white/10 to-transparent" />
+                <h2 className="text-3xl font-bold text-foreground tracking-tight">Gallery</h2>
+                <div className="h-[2px] flex-1 bg-gradient-to-r from-foreground/10 to-transparent" />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 {project.gallery.map((img, idx) => (
-                  <div key={idx} className="group relative aspect-video rounded-[2.5rem] overflow-hidden glass border-white/5 shadow-2xl">
+                  <div key={idx} className="group relative aspect-video rounded-[2.5rem] overflow-hidden glass border-card-border shadow-2xl">
                     <img src={img} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-all duration-1000 scale-105 group-hover:scale-100" alt="Preview" />
                   </div>
                 ))}
@@ -477,32 +478,68 @@ export default function ProjectPageClient({ slug }: Props) {
           {project.faqs && project.faqs.length > 0 && (
             <section className="lg:col-span-2 space-y-12 mt-20">
               <div className="text-center space-y-4">
-                <h2 className="text-4xl font-bold text-white tracking-tight">Common Questions</h2>
-                <p className="text-white/20 text-[10px] uppercase tracking-[0.3em] font-bold">Frequently Asked Questions</p>
+                <h2 className="text-4xl font-bold text-foreground tracking-tight">Common Questions</h2>
+                <p className="text-foreground/40 text-[10px] uppercase tracking-[0.3em] font-bold">Frequently Asked Questions</p>
               </div>
               <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
                 {project.faqs.map((faq, i) => (
-                  <div key={i} className="glass p-10 rounded-[2.5rem] bg-white/[0.01] border-white/5 hover:bg-white/[0.03] transition-all group">
+                  <div key={i} className="glass p-10 rounded-[2.5rem] bg-foreground/[0.01] border-card-border hover:bg-foreground/[0.03] transition-all group">
                     <div className="flex items-start gap-4 mb-6">
                       <div className="w-8 h-8 rounded-lg bg-accent-sky/10 border border-accent-sky/20 flex items-center justify-center text-accent-sky text-[10px] font-bold">Q</div>
-                      <h3 className="text-white font-bold text-lg group-hover:text-accent-sky transition-colors leading-tight">{faq.q}</h3>
+                      <h3 className="text-foreground font-bold text-lg group-hover:text-accent-sky transition-colors leading-tight">{faq.q}</h3>
                     </div>
-                    <div className="flex items-start gap-4 pl-12 border-l-2 border-white/5">
-                      <p className="text-white/40 text-sm leading-relaxed font-normal">{faq.a}</p>
+                    <div className="flex items-start gap-4 pl-12 border-l-2 border-foreground/5">
+                      <p className="text-foreground/60 text-sm leading-relaxed font-normal">{faq.a}</p>
                     </div>
                   </div>
                 ))}
               </div>
             </section>
           )}
+
+          {/* DEVELOPER SHOWCASE */}
+          <section className="lg:col-span-2 mt-32 max-w-4xl mx-auto animate-fade-in group">
+            <div className="glass p-12 rounded-[3.5rem] bg-foreground/[0.01] border-card-border relative overflow-hidden flex flex-col md:flex-row items-center gap-12 text-center md:text-left transition-all hover:bg-foreground/[0.03]">
+              <div className="absolute -top-24 -left-24 w-64 h-64 bg-accent-sky/5 blur-[100px] pointer-events-none" />
+
+              <div className="relative">
+                <div className="w-24 h-24 rounded-[2.5rem] bg-gradient-to-br from-accent-sky/20 to-accent-emerald/20 border border-card-border flex items-center justify-center text-4xl shadow-2xl group-hover:scale-110 transition-transform duration-500">
+                  👨‍💻
+                </div>
+                <div className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full bg-accent-sky flex items-center justify-center text-[10px] border-4 border-background shadow-lg">
+                  ✓
+                </div>
+              </div>
+
+              <div className="flex-1 space-y-4">
+                <div className="space-y-1">
+                  <h2 className="text-3xl font-bold text-foreground tracking-tight">Meet the Developer</h2>
+                  <p className="text-accent-sky text-sm font-bold uppercase tracking-widest">justaman045</p>
+                </div>
+                <p className="text-foreground/70 text-lg leading-relaxed font-normal">
+                  Crafting high-performance digital experiences with a focus on modern aesthetics and robust architecture.
+                </p>
+                <div className="flex items-center justify-center md:justify-start gap-4 pt-4">
+                  <Link
+                    href="https://github.com/justaman045"
+                    target="_blank"
+                    className="px-6 py-3 rounded-xl bg-foreground/5 border border-card-border text-foreground/60 text-xs font-bold uppercase tracking-widest hover:bg-foreground hover:text-background hover:scale-105 transition-all flex items-center gap-3"
+                  >
+                    <img src="https://cdnt.icons8.com/images/v3/github.svg" className="w-4 h-4 invert opacity-60 group-hover:invert-100 dark:invert" alt="" />
+                    <span>GITHUB</span>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </section>
         </div>
 
         {/* FOOTER */}
-        <div className="mt-48 pt-24 border-t border-white/5 flex flex-col items-center text-center">
-          <p className="text-white/10 text-[9px] font-bold uppercase tracking-[0.5em] mb-4">Project ID: {project.id}</p>
-          <div className="flex items-center gap-4 text-white/5 font-semibold uppercase tracking-widest text-[9px]">
+        <div className="mt-48 pt-24 border-t border-card-border flex flex-col items-center text-center">
+          <p className="text-foreground/10 text-[9px] font-bold uppercase tracking-[0.5em] mb-4">Project ID: {project.id}</p>
+          <div className="flex items-center gap-4 text-foreground/5 font-semibold uppercase tracking-widest text-[9px]">
             <span>System Online</span>
-            <span className="w-8 h-[1px] bg-white/5" />
+            <span className="w-8 h-[1px] bg-foreground/5" />
             <span>Deployment Pending</span>
           </div>
         </div>

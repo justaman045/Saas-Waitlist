@@ -1,19 +1,22 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #020617;
-  --card: rgba(248, 250, 252, 0.8);
-  --card-border: rgba(0, 0, 0, 0.05);
-  --accent-sky: #0ea5e9;
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --card: rgba(255, 255, 255, 0.7);
+  --card-border: rgba(0, 0, 0, 0.08);
+  --accent-sky: #0284c7;
   --accent-emerald: #059669;
 }
 
 .dark {
-  --background: #030712;
-  --foreground: #f3f4f6;
-  --card: rgba(17, 24, 39, 0.7);
-  --card-border: rgba(255, 255, 255, 0.1);
+  --background: #020617;
+  /* Deeper slate-black */
+  --foreground: #f8fafc;
+  --card: rgba(15, 23, 42, 0.6);
+  /* Richer glass base */
+  --card-border: rgba(56, 189, 248, 0.15);
+  /* Tinted border for vibrancy */
   --accent-sky: #38bdf8;
   --accent-emerald: #10b981;
 }
@@ -33,6 +36,9 @@ body {
   color: var(--foreground);
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
+  background-image:
+    radial-gradient(circle at 50% -20%, rgba(2, 132, 199, 0.05), transparent),
+    radial-gradient(circle at 0% 0%, rgba(5, 150, 105, 0.02), transparent);
 }
 
 .dark body {
@@ -54,9 +60,15 @@ body {
 }
 
 .glass-hover:hover {
+  background: var(--card);
+  border-color: var(--accent-sky);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.1);
+}
+
+.dark .glass-hover:hover {
   background: rgba(31, 41, 55, 0.8);
   border-color: rgba(56, 189, 248, 0.4);
-  transform: translateY(-2px);
   box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
 }
 

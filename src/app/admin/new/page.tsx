@@ -127,7 +127,7 @@ export default function NewProjectPage() {
                 <div className="mb-12">
                     <button
                         onClick={() => router.push("/admin")}
-                        className="group flex items-center gap-2 text-white/40 hover:text-white transition-colors text-xs uppercase tracking-widest mb-6"
+                        className="group flex items-center gap-2 text-foreground/60 hover:text-foreground transition-colors text-xs uppercase tracking-widest mb-6"
                     >
                         <span className="group-hover:-translate-x-1 transition-transform">←</span> Abort and Return
                     </button>
@@ -137,7 +137,7 @@ export default function NewProjectPage() {
                         </div>
                         <div>
                             <h1 className="text-4xl font-black tracking-tighter text-foreground drop-shadow-sm">Project Forge</h1>
-                            <p className="text-foreground/40 text-xs font-light italic">Dimensional instantiation of a new project node.</p>
+                            <p className="text-foreground/60 text-xs font-light italic">Dimensional instantiation of a new project node.</p>
                         </div>
                     </div>
                 </div>
@@ -148,23 +148,23 @@ export default function NewProjectPage() {
 
                     <form onSubmit={handleCreate} className="space-y-8">
                         <div className="space-y-2">
-                            <label className="text-[10px] uppercase tracking-[0.3em] font-black text-foreground/20 ml-1">Node Identity</label>
+                            <label className="text-[10px] uppercase tracking-[0.3em] font-black text-foreground/40 ml-1">Node Identity</label>
                             <input
                                 required
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
-                                className="w-full rounded-2xl border border-white/5 bg-white/5 px-6 py-4 text-sm text-foreground focus:border-accent-emerald/40 focus:bg-white/10 outline-none transition-all placeholder:text-foreground/10"
+                                className="w-full rounded-2xl border border-card-border bg-foreground/5 px-6 py-4 text-sm text-foreground focus:border-accent-emerald/40 focus:bg-foreground/10 outline-none transition-all placeholder:text-foreground/10"
                                 placeholder="e.g. Quantum Analytics Studio"
                             />
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-[10px] uppercase tracking-[0.3em] font-black text-foreground/20 ml-1">Access Slug</label>
+                            <label className="text-[10px] uppercase tracking-[0.3em] font-black text-foreground/40 ml-1">Access Slug</label>
                             <div className="relative">
                                 <input
                                     readOnly
                                     value={slug}
-                                    className={`w-full rounded-2xl border border-white/5 bg-white/5 px-6 py-4 text-sm font-mono transition-all ${isCheckingSlug ? 'text-foreground/20 border-accent-sky/20' : 'text-accent-emerald/80'}`}
+                                    className={`w-full rounded-2xl border border-card-border bg-foreground/5 px-6 py-4 text-sm font-mono transition-all ${isCheckingSlug ? 'text-foreground/40 border-accent-sky/20' : 'text-accent-emerald/80'}`}
                                     placeholder={isCheckingSlug ? "Generating Unique Key..." : "quantum-analytics"}
                                 />
                                 {isCheckingSlug && (
@@ -173,19 +173,19 @@ export default function NewProjectPage() {
                                     </div>
                                 )}
                             </div>
-                            <p className="text-[9px] text-foreground/20 ml-1 italic font-light">
+                            <p className="text-[9px] text-foreground/40 ml-1 italic font-light">
                                 {isCheckingSlug ? "Validating uniqueness across cloud nodes..." : <>Node will be accessible at <span className="text-accent-emerald/60">/p/{slug || "..."}</span></>}
                             </p>
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-[10px] uppercase tracking-[0.3em] font-black text-foreground/20 ml-1">Mission Intelligence</label>
+                            <label className="text-[10px] uppercase tracking-[0.3em] font-black text-foreground/40 ml-1">Mission Intelligence</label>
                             <textarea
                                 rows={5}
                                 required
                                 value={desc}
                                 onChange={(e) => setDesc(e.target.value)}
-                                className="w-full rounded-2xl border border-white/5 bg-white/5 px-6 py-4 text-sm text-foreground focus:border-accent-emerald/40 focus:bg-white/10 outline-none transition-all resize-none font-light leading-relaxed"
+                                className="w-full rounded-2xl border border-card-border bg-foreground/5 px-6 py-4 text-sm text-foreground focus:border-accent-emerald/40 focus:bg-foreground/10 outline-none transition-all resize-none font-light leading-relaxed"
                                 placeholder="Describe the objective and core vision of this deployment unit..."
                             />
                         </div>
@@ -204,7 +204,7 @@ export default function NewProjectPage() {
                             >
                                 {saving ? "Instantiating..." : "Initiate Unit Deployment"}
                             </button>
-                            <p className="text-center text-[9px] text-foreground/20 mt-4 font-medium uppercase tracking-[0.1em]">
+                            <p className="text-center text-[9px] text-foreground/40 mt-4 font-medium uppercase tracking-[0.1em]">
                                 Warning: This action will broadcast the node to the public network.
                             </p>
                         </div>

@@ -91,19 +91,19 @@ export default function AnalyticsPage() {
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
           <div className="space-y-1">
             <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-xl shadow-inner">
+              <div className="w-10 h-10 rounded-2xl bg-foreground/5 border border-card-border flex items-center justify-center text-xl shadow-inner">
                 📈
               </div>
-              <h1 className="text-4xl font-bold tracking-tight text-white drop-shadow-sm">Project intelligence</h1>
+              <h1 className="text-4xl font-bold tracking-tight text-foreground drop-shadow-sm">Project intelligence</h1>
             </div>
-            <p className="text-white/40 text-sm font-light">
+            <p className="text-foreground/70 text-sm font-light">
               Aggregated performance metrics across <span className="text-accent-sky font-medium">{projects.length}</span> project nodes.
             </p>
           </div>
 
           <button
             onClick={() => router.push("/admin")}
-            className="px-6 py-2.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-white text-sm font-medium transition-all flex items-center gap-2"
+            className="px-6 py-2.5 rounded-2xl bg-foreground/5 hover:bg-foreground/10 border border-card-border text-foreground text-sm font-medium transition-all flex items-center gap-2"
           >
             ← Back to Terminal
           </button>
@@ -119,8 +119,8 @@ export default function AnalyticsPage() {
             <div key={i} className="glass p-6 rounded-[2.5rem] relative overflow-hidden group">
               <div className={`absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl ${stat.color} to-transparent opacity-50`} />
               <div className="text-2xl mb-4">{stat.icon}</div>
-              <p className="text-4xl font-black text-white mb-1">{stat.value}</p>
-              <p className="text-white/40 text-[10px] font-bold uppercase tracking-[0.2em]">{stat.label}</p>
+              <p className="text-4xl font-black text-foreground mb-1">{stat.value}</p>
+              <p className="text-foreground/70 text-[10px] font-bold uppercase tracking-[0.2em]">{stat.label}</p>
             </div>
           ))}
         </div>
@@ -130,33 +130,33 @@ export default function AnalyticsPage() {
           {/* GROWTH CHART */}
           <section className="glass p-8 rounded-[3rem] overflow-hidden">
             <div className="flex items-center justify-between mb-8">
-              <h2 className="text-lg font-bold text-white/90">Growth Trajectory</h2>
-              <span className="text-[10px] uppercase tracking-[0.1em] px-3 py-1 rounded-full bg-white/5 border border-white/5 text-white/40">Real-time Feed</span>
+              <h2 className="text-lg font-bold text-foreground/90">Growth Trajectory</h2>
+              <span className="text-[10px] uppercase tracking-[0.1em] px-3 py-1 rounded-full bg-foreground/5 border border-card-border text-foreground/70">Real-time Feed</span>
             </div>
 
             {growthData.length === 0 ? (
-              <div className="h-64 flex items-center justify-center border-2 border-dashed border-white/5 rounded-[2rem]">
-                <p className="text-white/20 text-xs tracking-widest uppercase italic">Awaiting Growth Data Points...</p>
+              <div className="h-64 flex items-center justify-center border-2 border-dashed border-card-border rounded-[2rem]">
+                <p className="text-foreground/40 text-xs tracking-widest uppercase italic">Awaiting Growth Data Points...</p>
               </div>
             ) : (
               <div className="h-80 w-full pr-4">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={growthData}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.03)" />
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--card-border)" />
                     <XAxis
                       dataKey="day"
                       axisLine={false}
                       tickLine={false}
-                      tick={{ fontSize: 10, fill: "rgba(255,255,255,0.3)" }}
+                      tick={{ fontSize: 10, fill: "var(--foreground-muted)" }}
                       dy={10}
                     />
                     <YAxis
                       axisLine={false}
                       tickLine={false}
-                      tick={{ fontSize: 10, fill: "rgba(255,255,255,0.3)" }}
+                      tick={{ fontSize: 10, fill: "var(--foreground-muted)" }}
                     />
                     <Tooltip
-                      contentStyle={{ background: "#111", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "1rem", fontSize: "12px" }}
+                      contentStyle={{ background: "var(--card)", border: "1px solid var(--card-border)", borderRadius: "1rem", fontSize: "12px" }}
                       itemStyle={{ color: "#38bdf8" }}
                     />
                     <Line
@@ -165,7 +165,7 @@ export default function AnalyticsPage() {
                       stroke="#38bdf8"
                       strokeWidth={4}
                       dot={{ fill: "#38bdf8", strokeWidth: 2, r: 4 }}
-                      activeDot={{ r: 6, stroke: "#FFF", strokeWidth: 2 }}
+                      activeDot={{ r: 6, stroke: "var(--background)", strokeWidth: 2 }}
                     />
                   </LineChart>
                 </ResponsiveContainer>
@@ -175,11 +175,11 @@ export default function AnalyticsPage() {
 
           {/* PER-PROJECT STATS */}
           <section className="space-y-6">
-            <h2 className="text-lg font-bold text-white/90 ml-2">Node Efficiency</h2>
+            <h2 className="text-lg font-bold text-foreground/90 ml-2">Node Efficiency</h2>
 
             {projectStats.length === 0 ? (
-              <div className="glass p-8 rounded-[2rem] text-center border-dashed border-white/5">
-                <p className="text-white/20 text-xs font-light">No node metrics found.</p>
+              <div className="glass p-8 rounded-[2rem] text-center border-dashed border-card-border">
+                <p className="text-foreground/40 text-xs font-light">No node metrics found.</p>
               </div>
             ) : (
               <div className="space-y-4">
@@ -189,15 +189,15 @@ export default function AnalyticsPage() {
                     className="glass p-6 rounded-[2rem] glass-hover group flex items-center justify-between"
                   >
                     <div>
-                      <p className="text-sm font-bold text-white group-hover:text-accent-sky transition-colors">
+                      <p className="text-sm font-bold text-foreground group-hover:text-accent-sky transition-colors">
                         {p.name}
                       </p>
-                      <p className="text-[10px] text-white/30 font-medium uppercase tracking-widest mt-1">
+                      <p className="text-[10px] text-foreground/70 font-medium uppercase tracking-widest mt-1">
                         Node Activation Stats
                       </p>
                     </div>
                     <div className="text-right">
-                      <span className="block text-lg font-black text-white">{p.signups}</span>
+                      <span className="block text-lg font-black text-foreground">{p.signups}</span>
                       <span className="block text-[8px] uppercase tracking-tighter text-accent-emerald font-bold">+{p.referrals} Referral</span>
                     </div>
                   </div>

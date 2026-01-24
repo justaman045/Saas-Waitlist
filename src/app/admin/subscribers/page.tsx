@@ -122,12 +122,12 @@ export default function SubscribersDashboard() {
                     <div className="space-y-1">
                         <button
                             onClick={() => router.push("/admin")}
-                            className="group flex items-center gap-2 text-foreground/40 hover:text-foreground transition-colors text-xs uppercase tracking-widest mb-4"
+                            className="group flex items-center gap-2 text-foreground/70 hover:text-foreground transition-colors text-xs uppercase tracking-widest mb-4"
                         >
                             <span className="group-hover:-translate-x-1 transition-transform">←</span> Return to HQ
                         </button>
                         <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-2xl shadow-inner">
+                            <div className="w-12 h-12 rounded-2xl bg-foreground/5 border border-card-border flex items-center justify-center text-2xl shadow-inner">
                                 👥
                             </div>
                             <h1 className="text-4xl font-black tracking-tighter text-foreground italic">Subscriber Intelligence</h1>
@@ -138,7 +138,7 @@ export default function SubscribersDashboard() {
                         <select
                             value={filterProject}
                             onChange={(e) => setFilterProject(e.target.value)}
-                            className="glass px-6 py-3 rounded-2xl text-xs font-bold uppercase tracking-widest bg-transparent border-white/5 outline-none hover:bg-white/5 transition-all"
+                            className="glass px-6 py-3 rounded-2xl text-xs font-bold uppercase tracking-widest bg-transparent border-card-border outline-none hover:bg-foreground/5 transition-all"
                         >
                             <option value="all" className="bg-background text-foreground">All Projects</option>
                             {projects.map(p => (
@@ -153,7 +153,7 @@ export default function SubscribersDashboard() {
                     {/* SUBSCRIBERS FEED */}
                     <section className="space-y-6">
                         <div className="flex items-center justify-between mb-4">
-                            <h2 className="text-sm font-black uppercase tracking-[0.3em] text-white/20 ml-2">Live Stream</h2>
+                            <h2 className="text-sm font-black uppercase tracking-[0.3em] text-foreground/50 ml-2">Live Stream</h2>
                             <div className="flex gap-1.5 items-center">
                                 <div className="w-1.5 h-1.5 rounded-full bg-accent-sky animate-ping" />
                                 <span className="text-[9px] font-black uppercase tracking-widest text-accent-sky/40">Broadcasting</span>
@@ -165,34 +165,34 @@ export default function SubscribersDashboard() {
                                 {[1, 2, 3, 4, 5].map(i => <div key={i} className="h-20 glass rounded-[2rem] animate-pulse" />)}
                             </div>
                         ) : subscribers.length === 0 ? (
-                            <div className="glass p-20 rounded-[4rem] text-center border-dashed border-white/5 opacity-40">
-                                <p className="text-[10px] font-black uppercase tracking-widest">No Intelligence Data Captured</p>
+                            <div className="glass p-20 rounded-[4rem] text-center border-dashed border-card-border opacity-60">
+                                <p className="text-[10px] font-black uppercase tracking-widest text-foreground/50">No Intelligence Data Captured</p>
                             </div>
                         ) : (
                             <div className="space-y-4">
                                 {subscribers.map((sub) => (
                                     <div key={sub.id} className="glass p-6 rounded-[2rem] flex flex-col md:flex-row md:items-center justify-between gap-6 glass-hover group border-l-2 border-accent-sky/20">
                                         <div className="flex gap-5 items-center">
-                                            <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-lg shadow-inner group-hover:scale-110 transition-transform">
+                                            <div className="w-10 h-10 rounded-xl bg-foreground/5 border border-card-border flex items-center justify-center text-lg shadow-inner group-hover:scale-110 transition-transform">
                                                 👤
                                             </div>
                                             <div>
                                                 <h3 className="text-sm font-bold text-foreground">{sub.name}</h3>
-                                                <p className="text-xs text-foreground/40 font-light">{sub.email}</p>
+                                                <p className="text-xs text-foreground/70 font-light">{sub.email}</p>
                                             </div>
                                         </div>
 
                                         <div className="flex flex-wrap items-center gap-6">
                                             <div className="text-right">
-                                                <p className="text-[9px] font-black uppercase tracking-widest text-white/10 mb-1">Target Project</p>
+                                                <p className="text-[9px] font-black uppercase tracking-widest text-foreground/50 mb-1">Target Project</p>
                                                 <span className="text-[10px] font-black text-accent-sky bg-accent-sky/10 border border-accent-sky/20 px-3 py-1.5 rounded-xl block">
                                                     {sub.project_name || projects.find(p => p.id === (sub as any).project_id)?.name || "Unknown Node"}
                                                 </span>
                                             </div>
 
                                             <div className="text-right">
-                                                <p className="text-[9px] font-black uppercase tracking-widest text-white/10 mb-1">Referral Source</p>
-                                                <span className="text-[10px] font-medium text-white/40 italic">
+                                                <p className="text-[9px] font-black uppercase tracking-widest text-foreground/50 mb-1">Referral Source</p>
+                                                <span className="text-[10px] font-medium text-foreground/40 italic">
                                                     {sub.utm_source
                                                         ? `UTM: ${sub.utm_source}`
                                                         : (sub.source_url === "direct" || !sub.source_url || !sub.source_url.startsWith("http")
@@ -210,8 +210,8 @@ export default function SubscribersDashboard() {
                                             </div>
 
                                             <div className="text-right hidden md:block">
-                                                <p className="text-[9px] font-black uppercase tracking-widest text-white/10 mb-1">Timestamp</p>
-                                                <span className="text-[10px] text-white/20">
+                                                <p className="text-[9px] font-black uppercase tracking-widest text-foreground/50 mb-1">Timestamp</p>
+                                                <span className="text-[10px] text-foreground/50">
                                                     {sub.created_at ? new Date(sub.created_at.seconds * 1000).toLocaleDateString() : 'N/A'}
                                                 </span>
                                             </div>
@@ -231,10 +231,10 @@ export default function SubscribersDashboard() {
                                 {sortedSources.length > 0 ? sortedSources.map(([source, count]: [string, any], i) => (
                                     <div key={i} className="space-y-2">
                                         <div className="flex justify-between items-end">
-                                            <span className="text-[10px] font-black uppercase tracking-wider text-white/40 max-w-[180px] truncate">{source}</span>
+                                            <span className="text-[10px] font-black uppercase tracking-wider text-foreground/70 max-w-[180px] truncate">{source}</span>
                                             <span className="text-xs font-black text-foreground">{count}</span>
                                         </div>
-                                        <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                                        <div className="h-1.5 w-full bg-foreground/5 rounded-full overflow-hidden">
                                             <div
                                                 className="h-full bg-accent-sky transition-all duration-1000"
                                                 style={{ width: `${(count / subscribers.length) * 100}%` }}
@@ -246,9 +246,9 @@ export default function SubscribersDashboard() {
                                 )}
                             </div>
 
-                            <div className="mt-10 pt-6 border-t border-white/5">
-                                <p className="text-[9px] text-white/20 font-medium leading-relaxed uppercase tracking-wider">
-                                    Total Stream Analysis: <span className="text-white font-black">{subscribers.length} Entries</span>
+                            <div className="mt-10 pt-6 border-t border-card-border">
+                                <p className="text-[9px] text-foreground/50 font-medium leading-relaxed uppercase tracking-wider">
+                                    Total Stream Analysis: <span className="text-foreground font-black">{subscribers.length} Entries</span>
                                 </p>
                             </div>
                         </div>
@@ -261,7 +261,7 @@ export default function SubscribersDashboard() {
                                     "UTM parameters provide precise campaign attribution.",
                                     "Direct traffic indicates high brand awareness.",
                                 ].map((tip, i) => (
-                                    <li key={i} className="text-[9px] text-white/30 font-medium italic flex gap-2">
+                                    <li key={i} className="text-[9px] text-foreground/60 font-medium italic flex gap-2">
                                         <span className="text-accent-emerald">•</span> {tip}
                                     </li>
                                 ))}
