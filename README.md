@@ -1,6 +1,6 @@
 # Projekt Notify – Multi‑App Waitlist Studio 🚀
 
-Projekt Notify is a fully reusable **SaaS waitlist management platform** built using **Next.js 14**, **Tailwind CSS**, and **Supabase**.  
+Projekt Notify is a fully reusable **SaaS waitlist management platform** built using **Next.js 14**, **Tailwind CSS**, and **Firebase**.  
 It lets you create, customize, and track waitlists for all your app ideas under one unified dashboard.
 
 Perfect for indie founders, solo developers, and SaaS builders.
@@ -17,11 +17,11 @@ Perfect for indie founders, solo developers, and SaaS builders.
 ### 🧠 Smart Dashboard
 - Overview of all your projects
 - Total signups and referral tracking
-- Analytics (coming soon)
+- Analytics powered by Firestore
 
 ### 📝 Built‑in Editor
 - Edit every project from a dedicated editor
-- Upload screenshots to Supabase storage
+- Upload screenshots to Firebase Storage
 - Manage features, FAQs & descriptions
 
 ### 🔗 Automatic Referral System
@@ -31,8 +31,8 @@ Perfect for indie founders, solo developers, and SaaS builders.
 
 ### 📩 Email Launch System
 - Send launch emails to all subscribers
-- Uses **Resend / Brevo**
-- Works via secure Supabase service role
+- Uses **Resend**
+- Works via secure Firebase Admin SDK
 
 ### 🌓 Light & Dark Mode
 - Switch themes instantly
@@ -58,11 +58,11 @@ Perfect for indie founders, solo developers, and SaaS builders.
 - **Shadcn UI Components**
 
 ### Backend
-- **Supabase**
-  - Database
-  - Auth
-  - Storage
-  - RLS security
+- **Firebase**
+  - Cloud Firestore (Database)
+  - Firebase Authentication
+  - Firebase Storage
+  - Firebase Admin SDK (Server-side)
 
 ### Other Integrations
 - **Resend** (email delivery)
@@ -82,6 +82,7 @@ src/
     p/[slug]/
   components/
   lib/
+    firebase.ts
   styles/
 ```
 
@@ -92,11 +93,19 @@ src/
 Create a `.env.local` file:
 
 ```
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
-SUPABASE_SERVICE_ROLE_KEY=
+NEXT_PUBLIC_FIREBASE_API_KEY=
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
+NEXT_PUBLIC_FIREBASE_APP_ID=
+
+FIREBASE_PROJECT_ID=
+FIREBASE_CLIENT_EMAIL=
+FIREBASE_PRIVATE_KEY=
 
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
+NEXT_PUBLIC_ADMIN_EMAIL=
 
 RESEND_API_KEY=
 LAUNCH_FROM_EMAIL=
@@ -118,7 +127,7 @@ npm run dev
 Projekt Notify is optimized for:
 
 - **Vercel** (recommended)
-- **Supabase Database Hosting**
+- **Firebase Hosting** (optional)
 
 Deploy with:
 

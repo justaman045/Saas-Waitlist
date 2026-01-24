@@ -1,6 +1,6 @@
 // app/p/[slug]/page.tsx
 import { Metadata } from "next";
-import { createClient } from "@supabase/supabase-js";
+import { adminDb } from "@/lib/firebaseAdmin";
 import ProjectPageClient from "./ProjectPageClient";
 
 type Props = {
@@ -9,30 +9,16 @@ type Props = {
 
 // Build per-project <head> / metadata
 export async function generateMetadata(props: Props): Promise<Metadata> {
-  const params = await props.params; // <-- FIX HERE
+  const params = await props.params;
 
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+  const projectsRef = adminDb.collection("projects");
+  const query = projectsRef
+    .where("slug", "==", params.slug)
+    .where("is_active", "==", true)
+    .limit(1);
+  const snapshot = await query.get();
 
-  const { data } = await supabase
-    .from("projects")
-    .select(
-      `
-      name,
-      hero_title,
-      hero_subtitle,
-      short_description,
-      full_description,
-      gallery
-    `
-    )
-    .eq("slug", params.slug)
-    .eq("is_active", true)
-    .maybeSingle();
-
-  if (!data) {
+  if (snapshot.empty) {
     const title = "Waitlist not found | Projekt Notify";
     const description = "This waitlist is not available.";
     return {
@@ -52,6 +38,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
     };
   }
 
+  const data = snapshot.docs[0].data();
   const title = `${data.name} | Projekt Notify` || `Join the waitlist for ${data.name}`;
   const description =
     data.short_description ||

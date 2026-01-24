@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { createSupabaseBrowserClient } from "@/lib/supabaseClient";
+import { db } from "@/lib/firebase";
+import { collection, query, where, getDocs, orderBy, doc, getDoc, getCountFromServer } from "firebase/firestore";
 
 type Project = {
   id: string;
@@ -30,43 +31,42 @@ type ProfileCache = {
 };
 
 export default function HomePage() {
-  const supabase = createSupabaseBrowserClient();
-
   const [projects, setProjects] = useState<Project[]>([]);
   const [totalSignups, setTotalSignups] = useState<number | null>(null);
   const [profile, setProfile] = useState<ProfileCache | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Load projects, signups, profile
   useEffect(() => {
     const load = async () => {
       setLoading(true);
+      try {
+        const projectsRef = collection(db, "projects");
+        const q = query(
+          projectsRef,
+          where("is_active", "==", true),
+          orderBy("created_at", "desc")
+        );
+        const querySnapshot = await getDocs(q);
+        const projData = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        })) as Project[];
 
-      // 1. Load active projects
-      const { data: projData } = await supabase
-        .from("projects")
-        .select("id, name, slug, short_description, is_active")
-        .eq("is_active", true)
-        .order("created_at", { ascending: false });
+        setProjects(projData);
 
-      setProjects(projData ?? []);
+        const entriesRef = collection(db, "waitlist_entries");
+        const countSnapshot = await getCountFromServer(entriesRef);
+        setTotalSignups(countSnapshot.data().count);
 
-      // 2. Load signup count
-      const { count } = await supabase
-        .from("waitlist_entries")
-        .select("id", { count: "exact", head: true });
+        const profileRef = doc(db, "profile_cache", "1");
+        const profileSnap = await getDoc(profileRef);
 
-      setTotalSignups(count ?? 0);
-
-      // 3. Load cached profile data (GitHub + LinkedIn)
-      const { data: profileData } = await supabase
-        .from("profile_cache")
-        .select("github, linkedin")
-        .eq("id", 1)
-        .single();
-
-      setProfile(profileData);
-
+        if (profileSnap.exists()) {
+          setProfile(profileSnap.data() as ProfileCache);
+        }
+      } catch (error) {
+        console.error("Error loading home page data:", error);
+      }
       setLoading(false);
     };
 
@@ -74,176 +74,142 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-16 text-sm text-slate-200">
+    <div className="min-h-screen">
+      <main className="max-w-7xl mx-auto px-6 py-32">
+        {/* HERO */}
+        <div className="relative mb-24 text-center animate-fade-in">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-accent-sky/10 rounded-full blur-[120px] -z-10" />
 
-      {/* HERO SECTION */}
-      <div className="text-center mb-16">
-        <div className="inline-block px-4 py-1 mb-4 text-xs text-emerald-300 rounded-full border border-emerald-500/40 bg-emerald-500/10">
-          🚀 Launch-ready waitlists for all Aman's SaaS products
-        </div>
-
-        <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 leading-tight">
-          Central hub for all Aman's{" "}
-          <span className="text-sky-400">SaaS waitlists</span>
-        </h1>
-
-        <p className="text-slate-400 max-w-xl mx-auto mb-8">
-          Manage all Aman's app waitlists, collect signups, track referrals, and 
-          send launch emails — all from one unified dashboard.
-        </p>
-
-        <div className="flex justify-center gap-3">
-          <Link
-            href="/dashboard"
-            className="px-5 py-2 rounded-lg bg-sky-500 hover:bg-sky-400 text-black text-sm font-semibold"
-          >
-            Open dashboard
-          </Link>
-
-          <Link
-            href="/public"
-            className="px-5 py-2 rounded-lg border border-white/10 hover:bg-white/5 text-sm"
-          >
-            View public waitlists
-          </Link>
-        </div>
-      </div>
-
-      {/* SNAPSHOT */}
-      <div className="mb-20 rounded-2xl border border-white/10 bg-black/30 p-6 shadow-xl">
-        <h2 className="text-lg font-semibold text-slate-100 mb-4">
-          Snapshot
-        </h2>
-
-        <div className="grid sm:grid-cols-3 gap-6">
-          <div className="rounded-xl border border-white/10 bg-black/40 p-4">
-            <p className="text-xs text-slate-400">Projects</p>
-            <p className="text-xl font-semibold text-sky-300">
-              {projects.length}
-            </p>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-emerald/10 border border-accent-emerald/20 text-accent-emerald text-[11px] font-medium mb-6 animate-pulse">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent-emerald opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-accent-emerald"></span>
+            </span>
+            Active Studio Hub
           </div>
 
-          <div className="rounded-xl border border-white/10 bg-black/40 p-4">
-            <p className="text-xs text-slate-400">Total signups</p>
-            <p className="text-xl font-semibold text-emerald-300">
-              {totalSignups ?? "…"}
-            </p>
-          </div>
+          <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6 leading-[1.1]">
+            Instantiating My <br />
+            <span className="text-gradient">Next Generation</span>
+          </h1>
 
-          <div className="rounded-xl border border-white/10 bg-black/40 p-4">
-            <p className="text-xs text-slate-400">Referral tracking</p>
-            <p className="text-xl font-semibold text-blue-300">Enabled</p>
+          <p className="text-lg text-white/50 max-w-2xl mx-auto mb-10 leading-relaxed font-light italic">
+            "My personal hub to manage and showcase all my upcoming SaaS builds. <br className="hidden md:block" />
+            Follow my journey, join the waitlists, and get exclusive early access."
+          </p>
+
+          <div className="flex flex-wrap justify-center gap-4">
+            <Link
+              href="/public"
+              className="px-8 py-3 rounded-2xl bg-white text-black font-semibold hover:bg-white/90 transition-all flex items-center gap-2 group shadow-xl shadow-white/5"
+            >
+              Explore Live Projects
+              <span className="group-hover:translate-x-1 transition-transform">→</span>
+            </Link>
           </div>
         </div>
-      </div>
 
-      {/* PUBLIC WAITLISTS */}
-      <div className="mb-20">
-        <h2 className="text-2xl font-semibold text-white mb-4">
-          Live waitlists
-        </h2>
+        {/* STATS */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-32">
+          {[
+            { label: "Active Products", value: projects.length, icon: "🚀", color: "from-blue-500/20" },
+            { label: "Total Subscribers", value: totalSignups ?? "...", icon: "👥", color: "from-emerald-500/20" },
+            { label: "Viral Growth", value: "Referrals", icon: "✨", color: "from-purple-500/20" },
+          ].map((stat, i) => (
+            <div key={i} className="glass p-6 rounded-3xl relative overflow-hidden group">
+              <div className={`absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl ${stat.color} to-transparent opacity-50`} />
+              <div className="text-2xl mb-4">{stat.icon}</div>
+              <p className="text-3xl font-bold text-white mb-1">{stat.value}</p>
+              <p className="text-white/40 text-xs font-medium uppercase tracking-wider">{stat.label}</p>
+            </div>
+          ))}
+        </div>
 
-        {projects.length === 0 ? (
-          <p className="text-slate-400">No live waitlists yet.</p>
-        ) : (
-          <div className="grid md:grid-cols-2 gap-6">
-            {projects.map((p) => (
-              <div
-                key={p.id}
-                className="p-5 rounded-2xl border border-white/10 bg-black/30 hover:border-sky-400/40 transition"
-              >
-                <p className="text-lg font-medium text-slate-100">{p.name}</p>
-                <p className="text-xs text-slate-400 mt-2 mb-4">
-                  {p.short_description || "No description provided."}
-                </p>
+        {/* PROJECTS GRID */}
+        <div className="mb-32">
+          <div className="flex items-end justify-between mb-12">
+            <div>
+              <h2 className="text-3xl font-bold text-white mb-2">Live Projects</h2>
+              <p className="text-white/40">Select a project to explore and join the waitlist.</p>
+            </div>
+            <Link href="/public" className="text-accent-sky hover:underline text-sm font-medium">View all</Link>
+          </div>
 
-                <div className="flex justify-between items-center">
-                  <p className="text-[11px] text-slate-500">
-                    Public waitlist available
+          {!loading && projects.length === 0 ? (
+            <div className="glass p-12 rounded-3xl text-center border-dashed border-white/5">
+              <p className="text-white/30">No active projects at the moment. Stay tuned!</p>
+            </div>
+          ) : (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {projects.map((p) => (
+                <Link
+                  key={p.id}
+                  href={`/p/${p.slug}`}
+                  className="glass p-8 rounded-[38px] glass-hover group"
+                >
+                  <div className="mb-6 flex justify-between items-start">
+                    <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
+                      📦
+                    </div>
+                    <span className="px-3 py-1 rounded-full bg-accent-sky/10 border border-accent-sky/20 text-accent-sky text-[10px] font-bold tracking-widest uppercase">
+                      Waitlist Open
+                    </span>
+                  </div>
+                  <h3 className="text-2xl font-bold mb-3 text-white/90">{p.name}</h3>
+                  <p className="text-sm text-white/50 leading-relaxed mb-8 line-clamp-2 italic">
+                    {p.short_description || "Building something amazing. Join the journey to get notified first."}
                   </p>
+                  <div className="flex items-center justify-between pt-6 border-t border-white/5">
+                    <span className="text-[10px] font-medium text-white/30 uppercase tracking-[0.2em]">Join Now</span>
+                    <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-accent-sky group-hover:text-black transition-all">
+                      →
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
 
-                  <Link
-                    href={`/p/${p.slug}`}
-                    className="text-xs rounded-full border border-sky-500/40 px-3 py-1 text-sky-300 hover:bg-sky-500/10"
-                  >
-                    Join waitlist
-                  </Link>
+        {/* CREATOR */}
+        {profile && (
+          <section className="mt-32 pt-24 border-t border-white/5">
+            <div className="glass p-12 rounded-3xl overflow-hidden relative">
+              <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-accent-sky/5 to-transparent pointer-events-none" />
+              <div className="relative flex flex-col md:flex-row items-center gap-12">
+                <div className="relative animate-float">
+                  <div className="absolute inset-0 bg-accent-sky/20 rounded-full blur-[40px]" />
+                  <img
+                    src={profile.github.avatar}
+                    className="w-40 h-40 rounded-[2.5rem] relative z-10 grayscale hover:grayscale-0 transition-all duration-700 shadow-2xl border border-white/10"
+                    alt="Creator"
+                  />
+                </div>
+                <div className="flex-1 text-center md:text-left">
+                  <h2 className="text-3xl font-bold text-white mb-4">Meet the Creator</h2>
+                  <p className="text-lg text-white/60 mb-8 leading-relaxed max-w-xl font-light">
+                    Hi, I'm <span className="text-white font-medium">{profile.github.name}</span>.
+                    I'm building a suite of SaaS products for indie developers.
+                    {profile.github.bio}
+                  </p>
+                  <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
+                    <a href={profile.github.url} target="_blank" className="px-6 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white text-sm transition-all">
+                      GitHub
+                    </a>
+                    <a href={profile.linkedin.url} target="_blank" className="px-6 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white text-sm transition-all">
+                      LinkedIn
+                    </a>
+                  </div>
                 </div>
               </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* ABOUT THE CREATOR */}
-      <div className="mt-20 border-t border-white/10 pt-12 pb-24">
-        <h2 className="text-2xl font-semibold text-white mb-4">
-          About the creator
-        </h2>
-
-        {!profile ? (
-          <p className="text-slate-400 text-sm">Loading profile…</p>
-        ) : (
-          <div className="flex flex-col md:flex-row gap-10">
-            {/* GITHUB */}
-            <div className="flex items-start gap-4">
-              <img
-                src={profile.github.avatar}
-                className="w-20 h-20 rounded-full border border-white/20"
-              />
-
-              <div>
-                <p className="text-lg font-semibold text-slate-100">
-                  {profile.github.name}
-                </p>
-                <p className="text-xs text-slate-400 mb-2">
-                  {profile.github.bio}
-                </p>
-
-                <div className="text-[11px] text-slate-500 space-y-1">
-                  <p>Repos: {profile.github.repos}</p>
-                  <p>Followers: {profile.github.followers}</p>
-                </div>
-
-                <a
-                  href={profile.github.url}
-                  target="_blank"
-                  className="inline-block mt-3 px-3 py-1 border border-white/10 rounded-full text-xs hover:bg-white/5"
-                >
-                  View GitHub →
-                </a>
-              </div>
             </div>
-
-            {/* LINKEDIN */}
-            <div className="flex items-start gap-4">
-              {profile.linkedin.avatar && (
-                <img
-                  src={profile.linkedin.avatar}
-                  className="w-20 h-20 rounded-full border border-white/20"
-                />
-              )}
-
-              <div>
-                <p className="text-lg font-semibold text-slate-100">
-                  {profile.linkedin.title }
-                </p>
-                <p className="text-xs text-slate-400 mb-2 max-w-xs leading-relaxed">
-                  {profile.linkedin.description}
-                </p>
-
-                <a
-                  href={profile.linkedin.url}
-                  target="_blank"
-                  className="inline-block mt-3 px-3 py-1 border border-white/10 rounded-full text-xs hover:bg-white/5"
-                >
-                  View LinkedIn →
-                </a>
-              </div>
-            </div>
-          </div>
+          </section>
         )}
-      </div>
+      </main>
+
+      <footer className="border-t border-white/5 py-12 text-center text-white/20 text-xs tracking-widest uppercase">
+        © 2026 Projekt Notify · One Build At A Time
+      </footer>
     </div>
   );
 }

@@ -1,14 +1,8 @@
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
-import { createClient } from "@supabase/supabase-js";
+import { adminDb } from "@/lib/firebaseAdmin";
 
 const resend = new Resend(process.env.RESEND_API_KEY!);
-
-const supabaseServer = () =>
-  createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
 
 export async function POST(
   req: Request,
@@ -18,31 +12,23 @@ export async function POST(
     // ⛔ Must await params in Next.js 14
     const { id } = await context.params;
 
-    const supabase = supabaseServer();
+    const projectDoc = await adminDb.collection("projects").doc(id).get();
 
-    const { data: project, error: projErr } = await supabase
-      .from("projects")
-      .select("name")
-      .eq("id", id)
-      .single();
-
-    if (projErr || !project) {
+    if (!projectDoc.exists) {
       return NextResponse.json(
         { error: "Project not found" },
         { status: 404 }
       );
     }
 
-    const { data: entries, error } = await supabase
-      .from("waitlist_entries")
-      .select("email")
-      .eq("project_id", id);
+    const project = projectDoc.data()!;
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
+    const entriesSnapshot = await adminDb
+      .collection("waitlist_entries")
+      .where("project_id", "==", id)
+      .get();
 
-    const emails = Array.from(new Set(entries.map((e) => e.email)));
+    const emails = Array.from(new Set(entriesSnapshot.docs.map((doc: any) => doc.data().email as string)));
 
     if (emails.length === 0) {
       return NextResponse.json({ ok: true, sent: 0 });

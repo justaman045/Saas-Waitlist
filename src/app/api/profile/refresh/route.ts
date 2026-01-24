@@ -1,10 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { adminDb } from "@/lib/firebaseAdmin";
 
 export async function GET() {
     try {
@@ -61,15 +56,13 @@ export async function GET() {
 
 
 
-        // ========= 3. SAVE BOTH TO SUPABASE =========
-        await supabase
-            .from("profile_cache")
-            .upsert({
-                id: 1,
-                github: githubProfile,
-                linkedin: linkedinProfile,
-                updated_at: new Date().toISOString()
-            });
+        // ========= 3. SAVE BOTH TO FIREBASE =========
+        const profileRef = adminDb.collection("profile_cache").doc("1");
+        await profileRef.set({
+            github: githubProfile,
+            linkedin: linkedinProfile,
+            updated_at: new Date().toISOString()
+        }, { merge: true });
 
         return NextResponse.json({ ok: true });
 
