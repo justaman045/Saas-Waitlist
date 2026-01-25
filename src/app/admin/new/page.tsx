@@ -137,7 +137,7 @@ export default function NewProjectPage() {
                         </div>
                         <div>
                             <h1 className="text-4xl font-black tracking-tighter text-foreground drop-shadow-sm">Project Forge</h1>
-                            <p className="text-foreground/60 text-xs font-light italic">Dimensional instantiation of a new project node.</p>
+                            <p className="text-foreground/60 text-xs font-medium uppercase tracking-[0.1em] mt-1">Dimensional instantiation of a new project node.</p>
                         </div>
                     </div>
                 </div>
@@ -153,7 +153,7 @@ export default function NewProjectPage() {
                                 required
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
-                                className="w-full rounded-2xl border border-card-border bg-foreground/5 px-6 py-4 text-sm text-foreground focus:border-accent-emerald/40 focus:bg-foreground/10 outline-none transition-all placeholder:text-foreground/10"
+                                className="w-full rounded-2xl border border-card-border bg-foreground/[0.03] px-6 py-5 text-sm text-foreground focus:border-accent-emerald/50 focus:bg-foreground/[0.05] focus:shadow-[0_0_30px_-10px_rgba(16,185,129,0.2)] outline-none transition-all placeholder:text-foreground/20"
                                 placeholder="e.g. Quantum Analytics Studio"
                             />
                         </div>
@@ -164,7 +164,7 @@ export default function NewProjectPage() {
                                 <input
                                     readOnly
                                     value={slug}
-                                    className={`w-full rounded-2xl border border-card-border bg-foreground/5 px-6 py-4 text-sm font-mono transition-all ${isCheckingSlug ? 'text-foreground/40 border-accent-sky/20' : 'text-accent-emerald/80'}`}
+                                    className={`w-full rounded-2xl border border-card-border bg-foreground/[0.03] px-6 py-5 text-sm font-mono transition-all ${isCheckingSlug ? 'text-foreground/40 border-accent-sky/20' : 'text-accent-emerald shadow-inner'}`}
                                     placeholder={isCheckingSlug ? "Generating Unique Key..." : "quantum-analytics"}
                                 />
                                 {isCheckingSlug && (
@@ -200,9 +200,10 @@ export default function NewProjectPage() {
                             <button
                                 type="submit"
                                 disabled={saving}
-                                className="w-full rounded-[2rem] bg-accent-emerald py-5 text-xs font-black uppercase tracking-[0.4em] text-black hover:scale-[1.02] active:scale-[0.98] transition-all shadow-2xl shadow-accent-emerald/20 disabled:opacity-50 border-b-4 border-black/20"
+                                className="group relative w-full rounded-[2rem] bg-accent-emerald py-6 text-xs font-black uppercase tracking-[0.4em] text-black hover:scale-[1.02] active:scale-[0.98] transition-all shadow-[0_0_40px_-10px_rgba(16,185,129,0.5)] disabled:opacity-50 overflow-hidden"
                             >
-                                {saving ? "Instantiating..." : "Initiate Unit Deployment"}
+                                <div className="absolute inset-0 bg-white/30 translate-y-full group-hover:translate-y-0 transition-transform duration-300 pointer-events-none" />
+                                <span className="relative z-10">{saving ? "Instantiating..." : "Initiate Unit Deployment"}</span>
                             </button>
                             <p className="text-center text-[9px] text-foreground/40 mt-4 font-medium uppercase tracking-[0.1em]">
                                 Warning: This action will broadcast the node to the public network.

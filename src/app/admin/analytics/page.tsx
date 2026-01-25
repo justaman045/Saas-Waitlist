@@ -156,16 +156,17 @@ export default function AnalyticsPage() {
                       tick={{ fontSize: 10, fill: "var(--foreground-muted)" }}
                     />
                     <Tooltip
-                      contentStyle={{ background: "var(--card)", border: "1px solid var(--card-border)", borderRadius: "1rem", fontSize: "12px" }}
-                      itemStyle={{ color: "#38bdf8" }}
+                      contentStyle={{ background: "rgba(var(--card), 0.9)", border: "1px solid var(--accent-sky)", borderRadius: "1rem", fontSize: "12px", boxShadow: "0 10px 40px -10px rgba(56,189,248,0.2)" }}
+                      itemStyle={{ color: "#38bdf8", fontWeight: "bold" }}
+                      cursor={{ stroke: "rgba(56,189,248,0.2)", strokeWidth: 2 }}
                     />
                     <Line
                       type="monotone"
                       dataKey="count"
                       stroke="#38bdf8"
-                      strokeWidth={4}
-                      dot={{ fill: "#38bdf8", strokeWidth: 2, r: 4 }}
-                      activeDot={{ r: 6, stroke: "var(--background)", strokeWidth: 2 }}
+                      strokeWidth={5}
+                      dot={{ fill: "#0f172a", stroke: "#38bdf8", strokeWidth: 3, r: 6 }}
+                      activeDot={{ r: 8, stroke: "#38bdf8", strokeWidth: 0, fill: "#fff" }}
                     />
                   </LineChart>
                 </ResponsiveContainer>

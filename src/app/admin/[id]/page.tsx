@@ -7,6 +7,7 @@ import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from "firebase/storage";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
+import Image from "next/image";
 
 type FAQ = { q: string; a: string };
 
@@ -291,7 +292,7 @@ export default function EditProjectPage() {
                   <input
                     value={project.name || ""}
                     onChange={(e) => setField("name", e.target.value)}
-                    className="w-full rounded-2xl border border-card-border bg-foreground/5 px-6 py-4 text-foreground focus:border-accent-sky/30 focus:bg-foreground/10 outline-none transition-all shadow-inner"
+                    className="w-full rounded-2xl border border-card-border bg-foreground/[0.03] px-6 py-5 text-foreground focus:border-accent-sky/50 focus:bg-foreground/[0.05] focus:shadow-[0_0_20px_-5px_rgba(56,189,248,0.15)] outline-none transition-all shadow-inner"
                     placeholder="E.g. My Awesome SaaS"
                   />
                 </div>
@@ -542,14 +543,14 @@ export default function EditProjectPage() {
                   <div className="h-px flex-1 bg-foreground/5" />
                 </div>
 
-                <label className="w-full flex flex-col items-center justify-center py-8 rounded-[2.5rem] border-2 border-dashed border-card-border hover:bg-foreground/5 hover:border-foreground/10 cursor-pointer transition-all group relative overflow-hidden text-foreground/5">
+                <label className="w-full flex flex-col items-center justify-center py-12 rounded-[2.5rem] border-2 border-dashed border-card-border hover:bg-foreground/[0.02] hover:border-accent-sky/30 cursor-pointer transition-all group relative overflow-hidden text-foreground/40 hover:text-accent-sky/80">
                   {uploading && (
-                    <div className="absolute inset-0 bg-background/80 flex items-center justify-center z-10 animate-fade-in">
-                      <div className="w-6 h-6 border-2 border-accent-sky/20 border-t-accent-sky rounded-full animate-spin" />
+                    <div className="absolute inset-0 bg-background/80 flex items-center justify-center z-10 animate-fade-in backdrop-blur-sm">
+                      <div className="w-8 h-8 border-2 border-accent-sky/20 border-t-accent-sky rounded-full animate-spin" />
                     </div>
                   )}
-                  <span className="text-xl mb-3 grayscale group-hover:grayscale-0 transition-opacity opacity-20">📸</span>
-                  <span className="text-[8px] font-bold uppercase tracking-[0.2em] text-center px-6">Firebase Storage (Standard)</span>
+                  <span className="text-3xl mb-4 grayscale group-hover:grayscale-0 transition-opacity opacity-20 group-hover:scale-110 duration-300">📸</span>
+                  <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-center px-6">Firebase Storage (Standard)</span>
                   <input
                     type="file"
                     accept="image/*"
@@ -563,9 +564,11 @@ export default function EditProjectPage() {
               <div className="grid grid-cols-1 gap-6 mt-8">
                 {(project.gallery || []).map((url: string, i: number) => (
                   <div key={i} className="group relative aspect-video rounded-[2rem] overflow-hidden glass border-card-border shadow-2xl">
-                    <img
+                    <Image
                       src={url}
-                      className="w-full h-full object-cover grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-700"
+                      fill
+                      unoptimized
+                      className="object-cover grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-700"
                       alt="Gallery Asset"
                     />
                     <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">

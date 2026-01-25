@@ -171,7 +171,7 @@ export default function SubscribersDashboard() {
                         ) : (
                             <div className="space-y-4">
                                 {subscribers.map((sub) => (
-                                    <div key={sub.id} className="glass p-6 rounded-[2rem] flex flex-col md:flex-row md:items-center justify-between gap-6 glass-hover group border-l-2 border-accent-sky/20">
+                                    <div key={sub.id} className="glass p-6 rounded-[2rem] flex flex-col md:flex-row md:items-center justify-between gap-6 glass-hover group border-l-4 border-l-transparent hover:border-l-accent-sky/50 transition-all">
                                         <div className="flex gap-5 items-center">
                                             <div className="w-10 h-10 rounded-xl bg-foreground/5 border border-card-border flex items-center justify-center text-lg shadow-inner group-hover:scale-110 transition-transform">
                                                 👤

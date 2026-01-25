@@ -1,115 +1,175 @@
 @import "tailwindcss";
 
-:root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
-  --card: rgba(255, 255, 255, 0.7);
-  --card-border: rgba(0, 0, 0, 0.08);
-  --accent-sky: #0284c7;
-  --accent-emerald: #059669;
-}
-
-.dark {
-  --background: #020617;
-  /* Deeper slate-black */
-  --foreground: #f8fafc;
-  --card: rgba(15, 23, 42, 0.6);
-  /* Richer glass base */
-  --card-border: rgba(56, 189, 248, 0.15);
-  /* Tinted border for vibrancy */
-  --accent-sky: #38bdf8;
-  --accent-emerald: #10b981;
-}
-
-@theme inline {
+@theme {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
   --color-card-border: var(--card-border);
-  --color-accent-sky: var(--accent-sky);
-  --color-accent-emerald: var(--accent-emerald);
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui;
-}
+  --color-accent-primary: var(--accent-primary);
+  --color-accent-secondary: var(--accent-secondary);
 
-body {
-  background-color: var(--background);
-  color: var(--foreground);
-  -webkit-font-smoothing: antialiased;
-  min-height: 100vh;
-  background-image:
-    radial-gradient(circle at 50% -20%, rgba(2, 132, 199, 0.05), transparent),
-    radial-gradient(circle at 0% 0%, rgba(5, 150, 105, 0.02), transparent);
-}
+  --animate-fade-in: fade-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-slide-up: slide-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-pulse-slow: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-float-slow: float-slow 6s ease-in-out infinite;
+  --animate-shimmer: shimmer 2s linear infinite;
 
-.dark body {
-  background-image:
-    radial-gradient(circle at 50% -20%, rgba(56, 189, 248, 0.15), transparent),
-    radial-gradient(circle at 0% 0%, rgba(16, 185, 129, 0.05), transparent);
-}
+  /* RADIUS */
+  --radius-card: 2rem;
 
-/* Glassmorphism */
-.glass {
-  background: var(--card);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--card-border);
-}
+  @keyframes fade-in {
+    0% {
+      opacity: 0;
+    }
 
-.glass-hover {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.glass-hover:hover {
-  background: var(--card);
-  border-color: var(--accent-sky);
-  transform: translateY(-2px);
-  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.1);
-}
-
-.dark .glass-hover:hover {
-  background: rgba(31, 41, 55, 0.8);
-  border-color: rgba(56, 189, 248, 0.4);
-  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
-}
-
-/* Animations */
-@keyframes float {
-  0% {
-    transform: translateY(0px);
+    100% {
+      opacity: 1;
+    }
   }
 
-  50% {
-    transform: translateY(-10px);
+  @keyframes slide-up {
+    0% {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
-  100% {
-    transform: translateY(0px);
-  }
-}
+  @keyframes pulse-slow {
 
-.animate-float {
-  animation: float 6s ease-in-out infinite;
-}
+    0%,
+    100% {
+      opacity: 0.2;
+    }
 
-.text-gradient {
-  background: linear-gradient(to right, var(--accent-sky), var(--accent-emerald));
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
+    50% {
+      opacity: 0.1;
+    }
   }
 
-  to {
-    opacity: 1;
-    transform: translateY(0px);
+  @keyframes float-slow {
+
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  @keyframes shimmer {
+    from {
+      background-position: 0 0;
+    }
+
+    to {
+      background-position: -200% 0;
+    }
   }
 }
 
-.animate-fade-in {
-  animation: fadeIn 0.8s ease-out forwards;
+@layer base {
+  :root {
+    /* LIGHT MODE */
+    --background: #ffffff;
+    --foreground: #09090b;
+
+    --card: #fafafa;
+    --card-border: #e4e4e7;
+
+    --accent-primary: #000000;
+    --accent-secondary: #71717a;
+  }
+
+  /* DARK MODE */
+  .dark {
+    --background: #09090b;
+    --foreground: #ededed;
+
+    --card: #18181b;
+    --card-border: #3f3f46;
+
+    /* VIBRANT ACCENTS FOR GRADIENTS */
+    --accent-primary: #818cf8;
+    /* Indigo */
+    --accent-secondary: #c084fc;
+    /* Violet */
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    -webkit-font-smoothing: antialiased;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+}
+
+@layer utilities {
+  .bg-grid-small {
+    background-size: 40px 40px;
+    background-image:
+      linear-gradient(to right, var(--card-border) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--card-border) 1px, transparent 1px);
+    opacity: 0.03;
+  }
+
+  /* GLASS CARD with Softness */
+  .glass {
+    background-color: var(--card);
+    border: 1px solid var(--card-border);
+    backdrop-filter: blur(8px);
+    border-radius: var(--radius-card);
+    /* 32px standard */
+    transition: all 0.3s ease;
+  }
+
+  /* MANUALLY DUPLICATED TO AVOID @APPLY ERROR */
+  .glass-card {
+    background-color: var(--card);
+    border: 1px solid var(--card-border);
+    backdrop-filter: blur(8px);
+    border-radius: var(--radius-card);
+    transition: all 0.3s ease;
+  }
+
+  .glass:hover,
+  .glass-card:hover {
+    border-color: rgba(129, 140, 248, 0.3);
+    /* Indigo hint on hover */
+    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.3);
+    transform: translateY(-2px);
+  }
+
+  /* TEXT GRADIENTS - FIXED: Using standard utility classes only */
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-purple-400 to-indigo-400;
+    background-size: 200% auto;
+    animation: shimmer 5s linear infinite;
+  }
+
+  .text-gradient-gold {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-amber-200 via-yellow-400 to-amber-200;
+  }
+
+  /* BUTTON GRADIENTS */
+  .btn-gradient {
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    color: white;
+    border: none;
+  }
+
+  .btn-gradient:hover {
+    opacity: 0.9;
+    transform: scale(1.02);
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
 }

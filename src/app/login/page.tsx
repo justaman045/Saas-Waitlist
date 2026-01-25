@@ -19,10 +19,26 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      router.replace("/admin");
+      // 1. Client-side sign in
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const idToken = await userCredential.user.getIdToken();
+
+      // 2. Exchange token for session cookie
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idToken }),
+      });
+
+      if (res.ok) {
+        // 3. Force reload to update middleware state
+        window.location.href = "/admin";
+      } else {
+        throw new Error("Session creation failed");
+      }
     } catch (err: any) {
-      setError(err.message);
+      console.error(err);
+      setError("Credentials invalid or server error.");
     } finally {
       setLoading(false);
     }

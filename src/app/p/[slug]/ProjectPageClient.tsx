@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { db } from "@/lib/firebase";
 import { collection, query, where, getDocs, limit, addDoc, getCountFromServer, serverTimestamp, orderBy } from "firebase/firestore";
 
@@ -109,13 +110,12 @@ export default function ProjectPageClient({ slug }: Props) {
           const refs = await fetchReferrals(data.referral_code);
           setState({
             status: "success",
-            message: "Welcome back to the stream.",
+            message: "Welcome back.",
             position: data.position,
             referralCode: data.referral_code,
             referrals: refs
           });
         } else {
-          // Cache is stale or project data changed
           clearSession();
         }
       } catch (err) {
@@ -177,7 +177,7 @@ export default function ProjectPageClient({ slug }: Props) {
         setStoredEmail(email.toLowerCase());
         setState({
           status: "success",
-          message: "You’re already in sync with this node.",
+          message: "You're already on the list.",
           position: existingData.position,
           referralCode: existingData.referral_code,
           referrals: refs
@@ -193,7 +193,6 @@ export default function ProjectPageClient({ slug }: Props) {
       const position = countSnap.data().count + 1;
       const referralCode = generateReferralCode();
 
-      // Capture Source Intelligence
       const sourceUrl = document.referrer || "direct";
       const utmSource = searchParams.get("utm_source") || null;
       const utmMedium = searchParams.get("utm_medium") || null;
@@ -220,33 +219,29 @@ export default function ProjectPageClient({ slug }: Props) {
 
       setState({
         status: "success",
-        message: "Node integration successful.",
+        message: "Successfully joined.",
         position,
         referralCode,
         referrals: refs
       });
     } catch (err: any) {
       console.error("Signup error:", err);
-      setState({ status: "error", message: "Transmission failed. Recalibrate and try again." });
+      setState({ status: "error", message: "Failed to join. Please try again." });
     }
   };
 
   if (loadingProject) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-6 bg-background">
-        <div className="glass p-8 rounded-3xl animate-pulse text-foreground/50 text-sm tracking-widest uppercase">
-          Synthesizing Project Data...
-        </div>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="w-8 h-8 border-2 border-foreground border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   if (!project) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-6 bg-background">
-        <div className="glass p-8 rounded-3xl border-red-500/20 text-red-400 text-sm tracking-widest uppercase">
-          Error: Unauthorized Access or Node Offline.
-        </div>
+      <div className="min-h-screen flex items-center justify-center bg-background text-sm font-mono text-red-500">
+        Error: Project not found.
       </div>
     );
   }
@@ -257,293 +252,165 @@ export default function ProjectPageClient({ slug }: Props) {
       : "";
 
   return (
-    <div className="min-h-screen pt-28 pb-32 px-6 bg-background overflow-hidden relative">
+    <div className="min-h-screen bg-background text-foreground pt-20">
+      {/* BACKGROUND GRID */}
+      <div className="fixed inset-0 bg-grid-small opacity-[0.05] pointer-events-none" />
 
-      {/* CINEMATIC BACKGROUND ELEMENTS */}
-      <div className="absolute top-0 left-0 w-full h-full -z-10 overflow-hidden pointer-events-none">
-        <div className="absolute top-[10%] left-[-10%] w-[800px] h-[800px] bg-accent-sky/5 rounded-full blur-[140px] animate-pulse" />
-        <div className="absolute bottom-[20%] right-[-5%] w-[600px] h-[600px] bg-accent-emerald/5 rounded-full blur-[120px]" />
-        <div className="absolute top-[40%] right-[10%] w-[400px] h-[400px] bg-orange-500/[0.03] rounded-full blur-[100px] animate-float" />
-      </div>
+      <div className="lg:grid lg:grid-cols-2 min-h-[calc(100vh-5rem)]">
 
-      <div className="max-w-7xl mx-auto">
+        {/* LEFT COLUMN: STICKY INFO */}
+        <div className="relative p-8 md:p-12 lg:p-16 lg:sticky lg:top-20 lg:h-[calc(100vh-5rem)] lg:flex lg:flex-col lg:justify-between border-r border-card-border bg-card/30 backdrop-blur-sm">
+          <div className="space-y-8">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-accent-secondary/30 bg-accent-secondary/5 text-accent-primary text-[10px] font-mono tracking-widest uppercase">
+              <span className="w-1.5 h-1.5 rounded-full bg-accent-primary animate-pulse" />
+              Waitlist Active
+            </div>
 
-        {/* HERO SECTION */}
-        <div className="grid lg:grid-cols-[1fr,460px] gap-16 lg:items-center mb-32 animate-fade-in text-balance">
-          <div className="space-y-10">
-            <div className="space-y-6">
-              <div className="inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-accent-sky/10 border border-accent-sky/20 backdrop-blur-md">
-                <div className="w-1.5 h-1.5 rounded-full bg-accent-sky shadow-[0_0_8px_rgba(56,189,248,0.5)]" />
-                <span className="text-accent-sky text-[10px] font-bold uppercase tracking-[0.2em]">Exclusive Early Access</span>
-              </div>
-              <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-foreground leading-[1.1]">
-                {project.hero_title || `Discover ${project.name}`}
+            <div className="space-y-4">
+              <h1 className="text-5xl md:text-7xl font-bold tracking-tighter text-balance">
+                {project.name}
               </h1>
-              <p className="text-xl md:text-2xl text-foreground/70 font-medium leading-relaxed max-w-2xl border-l-4 border-accent-sky/20 pl-8 mt-8">
-                {project.hero_subtitle || project.short_description || "Empowering the next generation of digital excellence."}
+              <p className="text-xl md:text-2xl text-foreground/60 font-medium leading-relaxed max-w-xl text-balance">
+                {project.hero_title || project.short_description || "Building the next generation of software."}
               </p>
             </div>
 
-            {project.full_description && (
-              <div className="relative group">
-                <div className="glass p-10 rounded-[2.5rem] bg-foreground/[0.02] border-card-border relative overflow-hidden backdrop-blur-3xl shadow-2xl">
-                  <div className="absolute -top-10 -right-10 w-32 h-32 bg-accent-sky/5 blur-3xl opacity-50" />
-                  <p className="text-foreground/80 leading-relaxed font-normal whitespace-pre-line text-sm md:text-lg">
-                    {project.full_description}
-                  </p>
-                </div>
+            {project.features && project.features.length > 0 && (
+              <div className="hidden lg:grid gap-4 pt-8">
+                {project.features.slice(0, 3).map((feature, i) => (
+                  <div key={i} className="flex items-center gap-3 text-sm font-medium text-foreground/80">
+                    <span className="flex items-center justify-center w-5 h-5 rounded-full bg-foreground text-background text-[10px]">✓</span>
+                    {feature}
+                  </div>
+                ))}
               </div>
             )}
           </div>
 
-          {/* SIGNUP/SUCCESS MODULE */}
-          <div className="lg:sticky lg:top-32 h-fit">
-            <div className="glass p-10 md:p-12 rounded-[3.5rem] shadow-[0_32px_128px_-16px_rgba(0,0,0,0.5)] relative overflow-hidden border-t-accent-sky/20 border-t-2 backdrop-blur-[100px]">
-              <div className="absolute -top-24 -right-24 w-56 h-56 bg-accent-sky/10 blur-[80px] pointer-events-none" />
+          <div className="hidden lg:block pt-12 text-xs font-mono text-foreground/40">
+            [ PROJECT_ID: {project.id.slice(0, 8)} ]
+          </div>
+        </div>
 
-              <div className="mb-10 flex items-center justify-between px-2">
-                <div>
-                  <h2 className="text-2xl font-bold text-foreground tracking-tight">Reserve Your Spot</h2>
-                  <p className="text-foreground/30 text-[10px] uppercase tracking-[0.2em] font-semibold mt-2">Join the priority access list</p>
+        {/* RIGHT COLUMN: ACTION & CONTENT */}
+        <div className="p-8 md:p-12 lg:p-16 flex flex-col gap-12 lg:gap-24 overflow-y-auto">
+
+          {/* WAITLIST FORM */}
+          <div className="w-full max-w-lg mx-auto lg:mx-0">
+            <div className="mb-8">
+              <h2 className="text-xl font-semibold tracking-tight mb-2">Reserve Access</h2>
+              <p className="text-foreground/60 text-sm">Join {state.position ? "the queue" : "the exclusive list"} for early access.</p>
+            </div>
+
+            {state.status === "success" ? (
+              <div className="p-8 border border-card-border bg-foreground/5 rounded-xl space-y-6">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 flex items-center justify-center rounded-full bg-foreground text-background text-xl">🎉</div>
+                  <div>
+                    <div className="text-lg font-bold">You're on the list.</div>
+                    <div className="text-sm text-foreground/60">Rank: <span className="font-mono font-bold">#{state.position}</span></div>
+                  </div>
                 </div>
-                {state.status === "success" && (
-                  <button
-                    onClick={clearSession}
-                    title="Change Account"
-                    className="w-10 h-10 rounded-xl bg-foreground/5 border border-card-border flex items-center justify-center hover:bg-foreground/10 transition-all group"
-                  >
-                    <span className="text-foreground/40 group-hover:text-foreground transition-colors text-sm">🔄</span>
-                  </button>
+
+                {shareLink && (
+                  <div className="space-y-3 pt-4 border-t border-card-border/50">
+                    <p className="text-xs font-mono uppercase tracking-widest text-foreground/50">Refer & Skip Queue</p>
+                    <div className="flex gap-2">
+                      <code className="flex-1 p-3 bg-background border border-card-border rounded-lg text-xs font-mono truncate">
+                        {shareLink}
+                      </code>
+                      <button
+                        onClick={() => { navigator.clipboard.writeText(shareLink); alert("Copied") }}
+                        className="px-4 py-2 border border-card-border hover:bg-foreground hover:text-background transition-colors rounded-lg text-xs font-bold uppercase"
+                      >
+                        Copy
+                      </button>
+                    </div>
+                  </div>
                 )}
               </div>
-
-              {state.status === "success" ? (
-                <div className="space-y-8 animate-fade-in text-center lg:text-left">
-                  <div className="p-8 rounded-[2rem] bg-accent-emerald/5 border border-accent-emerald/20 shadow-inner">
-                    <div className="w-16 h-16 rounded-2xl bg-accent-emerald/10 flex items-center justify-center text-3xl mx-auto lg:mx-0 mb-6 shadow-xl shadow-accent-emerald/10 border border-accent-emerald/20">✨</div>
-                    <h3 className="text-accent-emerald font-bold uppercase tracking-widest text-xs mb-2">Registration Successful</h3>
-                    <p className="text-foreground/70 text-[11px] font-medium">
-                      You've secured your position in the waitlist.<br />
-                      Current Rank: <span className="text-foreground font-bold text-xl ml-1">#{state.position}</span>
-                    </p>
-                  </div>
-
-                  {shareLink && (
-                    <div className="space-y-8">
-                      <div className="space-y-4">
-                        <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-accent-sky ml-2">Boost Your Rank</p>
-                        <div className="glass p-6 rounded-[2rem] bg-foreground/[0.03] border-accent-sky/10">
-                          <p className="text-[10px] text-foreground/60 mb-4 font-normal leading-relaxed text-center lg:text-left">Share your unique link. For every person who joins, you'll move up in line.</p>
-                          <div className="relative group">
-                            <input
-                              readOnly
-                              value={shareLink}
-                              className="w-full bg-background/40 border border-card-border rounded-xl px-5 py-4 text-[10px] text-accent-sky font-mono transition-all group-hover:border-accent-sky/30 outline-none"
-                            />
-                            <button
-                              onClick={() => {
-                                navigator.clipboard.writeText(shareLink);
-                                alert("Referral Link Copied.");
-                              }}
-                              className="absolute right-2 top-1/2 -translate-y-1/2 bg-accent-sky/10 hover:bg-accent-sky/20 px-4 py-2 rounded-lg text-[9px] font-bold tracking-widest uppercase text-accent-sky transition-all backdrop-blur-md border border-accent-sky/20"
-                            >
-                              COPY
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* REFERRAL NETWORK DISPLAY */}
-                      <div className="space-y-4 pt-8 border-t border-card-border">
-                        <div className="flex items-center justify-between px-2">
-                          <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-foreground/40">Your Referrals</h4>
-                          <span className="px-3 py-1 rounded-full bg-accent-sky/10 text-accent-sky text-[9px] font-bold border border-accent-sky/20">{state.referrals?.length || 0}</span>
-                        </div>
-                        <div className="space-y-3">
-                          {state.referrals && state.referrals.length > 0 ? (
-                            state.referrals.map((r, i) => (
-                              <div key={i} className="flex items-center justify-between p-4 rounded-xl bg-white/[0.02] border border-white/5 animate-fade-in group hover:bg-white/5 transition-colors" style={{ animationDelay: `${i * 100}ms` }}>
-                                <div className="flex items-center gap-4">
-                                  <div className="w-8 h-8 rounded-lg bg-accent-sky/10 border border-accent-sky/20 flex items-center justify-center text-[10px] text-accent-sky font-bold">
-                                    {r.name.charAt(0)}
-                                  </div>
-                                  <span className="text-[11px] font-medium text-foreground/70">
-                                    {r.name.split(' ').map(part => part.charAt(0) + '***').join(' ')} joined
-                                  </span>
-                                </div>
-                                <span className="text-[9px] font-bold text-accent-emerald uppercase tracking-widest">+1 Spot</span>
-                              </div>
-                            ))
-                          ) : (
-                            <div className="p-10 rounded-[2rem] border-2 border-dashed border-card-border text-center bg-foreground/[0.01]">
-                              <p className="text-[11px] text-foreground/40 font-medium">No referrals yet. <br />Invite friends to skip the queue!</p>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="space-y-3">
-                    <label className="text-[10px] uppercase tracking-[0.2em] font-bold text-foreground/40 ml-2">Full Name</label>
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="space-y-4">
+                  <div className="group">
+                    <label className="text-[10px] font-mono uppercase tracking-widest text-foreground/50 mb-1.5 block">Full Name</label>
                     <input
                       required
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      className="w-full rounded-2xl border border-card-border bg-foreground/5 px-6 py-4 text-sm text-foreground focus:border-accent-sky/30 focus:bg-foreground/10 outline-none transition-all placeholder:text-foreground/20 shadow-inner"
+                      className="w-full bg-transparent border-b border-card-border py-2 text-foreground focus:border-foreground outline-none transition-colors rounded-none"
                       placeholder="Jane Doe"
                     />
                   </div>
-
-                  <div className="space-y-3">
-                    <label className="text-[10px] uppercase tracking-[0.2em] font-bold text-foreground/40 ml-2">Email Address</label>
+                  <div className="group">
+                    <label className="text-[10px] font-mono uppercase tracking-widest text-foreground/50 mb-1.5 block">Email Address</label>
                     <input
                       required
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full rounded-2xl border border-card-border bg-foreground/5 px-6 py-4 text-sm text-foreground focus:border-accent-sky/30 focus:bg-foreground/10 outline-none transition-all placeholder:text-foreground/20 shadow-inner"
+                      className="w-full bg-transparent border-b border-card-border py-2 text-foreground focus:border-foreground outline-none transition-colors rounded-none"
                       placeholder="jane@example.com"
                     />
                   </div>
+                </div>
 
-                  <div className="pt-4">
-                    <button
-                      type="submit"
-                      disabled={state.status === "loading"}
-                      className="group w-full rounded-2xl bg-foreground py-5 text-[12px] font-bold uppercase tracking-[0.2em] text-background hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-foreground/5 disabled:opacity-50 flex items-center justify-center gap-3"
-                    >
-                      {state.status === "loading" ? "Processing..." : (
-                        <>
-                          Join the Waitlist
-                          <span className="group-hover:translate-x-1 transition-transform">→</span>
-                        </>
-                      )}
-                    </button>
-                    <p className="text-center text-[10px] text-foreground/20 mt-6 font-semibold uppercase tracking-[0.1em]">
-                      Be among the first to experience {project.name}.
-                    </p>
-                  </div>
-
-                  {state.status === "error" && (
-                    <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 text-[10px] font-bold uppercase tracking-widest text-center animate-shake">
-                      ⚠️ {state.message}
-                    </div>
-                  )}
-                </form>
-              )}
-            </div>
+                <button
+                  type="submit"
+                  disabled={state.status === "loading"}
+                  className="w-full py-4 bg-foreground text-background font-bold text-sm hover:opacity-90 transition-opacity disabled:opacity-50 mt-4"
+                >
+                  {state.status === "loading" ? "Processing..." : "Join Waitlist →"}
+                </button>
+              </form>
+            )}
           </div>
-        </div>
 
-        {/* SECONDARY CONTENT MATRIX */}
-        <div className="grid lg:grid-cols-2 gap-20">
-          {project.features && project.features.length > 0 && (
-            <section className="space-y-10">
-              <div className="flex items-center gap-6">
-                <h2 className="text-3xl font-bold text-foreground tracking-tight">Core Features</h2>
-                <div className="h-[2px] flex-1 bg-gradient-to-r from-foreground/10 to-transparent" />
-              </div>
-              <div className="grid gap-6">
-                {project.features.map((feature, i) => (
-                  <div key={i} className="glass p-8 rounded-[2rem] hover:bg-foreground/[0.03] border-card-border flex gap-8 items-start group relative overflow-hidden transition-all duration-500">
-                    <div className="w-12 h-12 rounded-xl bg-accent-sky/5 border border-card-border flex-shrink-0 flex items-center justify-center text-lg font-bold text-accent-sky shadow-inner group-hover:border-accent-sky/30 transition-all">
-                      {i + 1}
-                    </div>
-                    <p className="text-foreground/80 text-lg leading-relaxed font-normal py-1">{feature}</p>
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
-
+          {/* GALLERY */}
           {project.gallery && project.gallery.length > 0 && (
-            <section className="space-y-10">
-              <div className="flex items-center gap-6">
-                <h2 className="text-3xl font-bold text-foreground tracking-tight">Gallery</h2>
-                <div className="h-[2px] flex-1 bg-gradient-to-r from-foreground/10 to-transparent" />
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                {project.gallery.map((img, idx) => (
-                  <div key={idx} className="group relative aspect-video rounded-[2.5rem] overflow-hidden glass border-card-border shadow-2xl">
-                    <img src={img} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-all duration-1000 scale-105 group-hover:scale-100" alt="Preview" />
+            <div className="space-y-6">
+              <h3 className="text-xs font-mono uppercase tracking-widest text-foreground/40 border-b border-card-border pb-2">Interface Preview</h3>
+              <div className="grid gap-8">
+                {project.gallery.map((img, i) => (
+                  <div key={i} className="relative aspect-video border border-card-border bg-card/50 overflow-hidden">
+                    <Image
+                      src={img}
+                      fill
+                      unoptimized
+                      className="object-cover opacity-80 group-hover:opacity-100 transition-all duration-1000 scale-105 group-hover:scale-100"
+                      alt="Preview"
+                    />
                   </div>
                 ))}
-              </div>
-            </section>
-          )}
-
-          {project.faqs && project.faqs.length > 0 && (
-            <section className="lg:col-span-2 space-y-12 mt-20">
-              <div className="text-center space-y-4">
-                <h2 className="text-4xl font-bold text-foreground tracking-tight">Common Questions</h2>
-                <p className="text-foreground/40 text-[10px] uppercase tracking-[0.3em] font-bold">Frequently Asked Questions</p>
-              </div>
-              <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
-                {project.faqs.map((faq, i) => (
-                  <div key={i} className="glass p-10 rounded-[2.5rem] bg-foreground/[0.01] border-card-border hover:bg-foreground/[0.03] transition-all group">
-                    <div className="flex items-start gap-4 mb-6">
-                      <div className="w-8 h-8 rounded-lg bg-accent-sky/10 border border-accent-sky/20 flex items-center justify-center text-accent-sky text-[10px] font-bold">Q</div>
-                      <h3 className="text-foreground font-bold text-lg group-hover:text-accent-sky transition-colors leading-tight">{faq.q}</h3>
-                    </div>
-                    <div className="flex items-start gap-4 pl-12 border-l-2 border-foreground/5">
-                      <p className="text-foreground/60 text-sm leading-relaxed font-normal">{faq.a}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
-
-          {/* DEVELOPER SHOWCASE */}
-          <section className="lg:col-span-2 mt-32 max-w-4xl mx-auto animate-fade-in group">
-            <div className="glass p-12 rounded-[3.5rem] bg-foreground/[0.01] border-card-border relative overflow-hidden flex flex-col md:flex-row items-center gap-12 text-center md:text-left transition-all hover:bg-foreground/[0.03]">
-              <div className="absolute -top-24 -left-24 w-64 h-64 bg-accent-sky/5 blur-[100px] pointer-events-none" />
-
-              <div className="relative">
-                <div className="w-24 h-24 rounded-[2.5rem] bg-gradient-to-br from-accent-sky/20 to-accent-emerald/20 border border-card-border flex items-center justify-center text-4xl shadow-2xl group-hover:scale-110 transition-transform duration-500">
-                  👨‍💻
-                </div>
-                <div className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full bg-accent-sky flex items-center justify-center text-[10px] border-4 border-background shadow-lg">
-                  ✓
-                </div>
-              </div>
-
-              <div className="flex-1 space-y-4">
-                <div className="space-y-1">
-                  <h2 className="text-3xl font-bold text-foreground tracking-tight">Meet the Developer</h2>
-                  <p className="text-accent-sky text-sm font-bold uppercase tracking-widest">justaman045</p>
-                </div>
-                <p className="text-foreground/70 text-lg leading-relaxed font-normal">
-                  Crafting high-performance digital experiences with a focus on modern aesthetics and robust architecture.
-                </p>
-                <div className="flex items-center justify-center md:justify-start gap-4 pt-4">
-                  <Link
-                    href="https://github.com/justaman045"
-                    target="_blank"
-                    className="px-6 py-3 rounded-xl bg-foreground/5 border border-card-border text-foreground/60 text-xs font-bold uppercase tracking-widest hover:bg-foreground hover:text-background hover:scale-105 transition-all flex items-center gap-3"
-                  >
-                    <img src="https://cdnt.icons8.com/images/v3/github.svg" className="w-4 h-4 invert opacity-60 group-hover:invert-100 dark:invert" alt="" />
-                    <span>GITHUB</span>
-                  </Link>
-                </div>
               </div>
             </div>
-          </section>
-        </div>
+          )}
 
-        {/* FOOTER */}
-        <div className="mt-48 pt-24 border-t border-card-border flex flex-col items-center text-center">
-          <p className="text-foreground/10 text-[9px] font-bold uppercase tracking-[0.5em] mb-4">Project ID: {project.id}</p>
-          <div className="flex items-center gap-4 text-foreground/5 font-semibold uppercase tracking-widest text-[9px]">
-            <span>System Online</span>
-            <span className="w-8 h-[1px] bg-foreground/5" />
-            <span>Deployment Pending</span>
+          {/* FAQ */}
+          {project.faqs && project.faqs.length > 0 && (
+            <div className="space-y-6">
+              <h3 className="text-xs font-mono uppercase tracking-widest text-foreground/40 border-b border-card-border pb-2">Details</h3>
+              <div className="space-y-8">
+                {project.faqs.map((faq, i) => (
+                  <div key={i}>
+                    <h4 className="font-semibold text-lg mb-2">{faq.q}</h4>
+                    <p className="text-foreground/70 text-sm leading-relaxed">{faq.a}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* FOOTER */}
+          <div className="pt-24 border-t border-card-border mt-auto">
+            <div className="flex items-center gap-4 text-xs text-foreground/40 font-mono">
+              <Link href="/" className="hover:text-foreground transition-colors">Project Notify</Link>
+              <span>•</span>
+              <span>© {new Date().getFullYear()}</span>
+            </div>
           </div>
-        </div>
 
+        </div>
       </div>
     </div>
   );

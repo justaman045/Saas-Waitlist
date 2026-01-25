@@ -1,0 +1,27 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function to check if user is admin
+    function isAdmin() {
+      return request.auth != null && request.auth.token.email == "work.amanojha30@gmail.com";
+    }
+
+    // Projects: Public read, Admin write
+    match /projects/{projectId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Waitlist Entries: Public write (create only), Admin read/write
+    match /waitlist_entries/{entryId} {
+      allow create: if true; // Allow anyone to join waitlist
+      allow read, update, delete: if isAdmin();
+    }
+
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

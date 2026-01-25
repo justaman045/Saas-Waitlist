@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { auth, db } from "@/lib/firebase";
-import { onAuthStateChanged, signOut } from "firebase/auth";
-import { collection, query, orderBy, getDocs, getCountFromServer } from "firebase/firestore";
+import { signOut } from "firebase/auth";
+import { collection, query, orderBy, getDocs, getCountFromServer, where, limit } from "firebase/firestore";
 
 type Project = {
   id: string;
@@ -12,322 +13,344 @@ type Project = {
   slug: string;
   short_description: string | null;
   is_active: boolean;
+  subscriber_count?: number;
+  created_at: any;
+};
+
+type ActivityLog = {
+  id: string;
+  action: string;
+  project: string;
+  time: string;
+};
+
+type Referrer = {
+  code: string;
+  count: number;
+};
+
+type Subscriber = {
+  id: string;
+  email: string;
+  project_name: string;
   created_at: any;
 };
 
 export default function AdminDashboardPage() {
   const router = useRouter();
 
-  const [authChecked, setAuthChecked] = useState(false);
-  const [userEmail, setUserEmail] = useState<string | null>(null);
-
   const [projects, setProjects] = useState<Project[]>([]);
   const [totalSignups, setTotalSignups] = useState<number | null>(null);
-  const [loadingProjects, setLoadingProjects] = useState(true);
-  const [topReferrers, setTopReferrers] = useState<Array<{ name: string; email: string; count: number }>>([]);
+  const [topReferrers, setTopReferrers] = useState<Referrer[]>([]);
+  const [recentSubscribers, setRecentSubscribers] = useState<Subscriber[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // ----- AUTH GUARD -----
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (!user) {
-        router.replace("/login");
-        return;
-      }
+  // Mock removed. We will use recentSubscribers for this.
 
-      const allowedEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
-      if (allowedEmail && user.email !== allowedEmail) {
-        signOut(auth);
-        router.replace("/login");
-        return;
-      }
+  const timeAgo = (date: any) => {
+    if (!date) return "Unknown";
+    const seconds = Math.floor((new Date().getTime() - new Date(date.seconds * 1000).getTime()) / 1000);
+    if (seconds < 60) return "Just now";
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    return `${Math.floor(hours / 24)}d ago`;
+  };
 
-      setUserEmail(user.email ?? null);
-      setAuthChecked(true);
-    });
-
-    return () => unsubscribe();
-  }, [router]);
-
-  // ----- LOAD DATA -----
   const loadData = async () => {
-    setLoadingProjects(true);
-
+    setLoading(true);
     try {
-      // Load Projects
+      // 1. Projects
       const q = query(collection(db, "projects"), orderBy("created_at", "desc"));
       const querySnapshot = await getDocs(q);
-      const data = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as Project[];
 
-      setProjects(data);
-
-      // Load Signups
+      // 2. Total Count
       const entriesRef = collection(db, "waitlist_entries");
       const countSnapshot = await getCountFromServer(entriesRef);
       setTotalSignups(countSnapshot.data().count);
 
-      // Load Top Referrers
-      const allEntriesSnap = await getDocs(entriesRef);
-      const allEntries = allEntriesSnap.docs.map(d => d.data());
-
-      const counts: Record<string, number> = {};
-      allEntries.forEach(entry => {
-        if (entry.referred_by) {
-          counts[entry.referred_by] = (counts[entry.referred_by] || 0) + 1;
-        }
-      });
-
-      const sortedCodes = Object.entries(counts)
-        .sort(([, a], [, b]) => b - a)
-        .slice(0, 5);
-
-      const resolvedReferrers = sortedCodes.map(([code, count]) => {
-        const owner = allEntries.find(e => e.referral_code === code);
+      // 3. Project Data + Counts
+      const data = await Promise.all(querySnapshot.docs.map(async (doc) => {
+        const pData = doc.data();
+        const pEntriesRef = query(collection(db, "waitlist_entries"), where("project_id", "==", doc.id));
+        const pCountSnap = await getCountFromServer(pEntriesRef);
         return {
-          name: owner?.name || "Anonymous",
-          email: owner?.email || "Unknown",
-          count
+          id: doc.id,
+          ...pData,
+          subscriber_count: pCountSnap.data().count
         };
+      }));
+      setProjects(data as Project[]);
+
+      // 4. Recent Subscribers (Real Data)
+      const recentQ = query(entriesRef, orderBy("created_at", "desc"), limit(5));
+      const recentSnap = await getDocs(recentQ);
+      const recentData = recentSnap.docs.map(d => ({
+        id: d.id,
+        email: d.data().email,
+        project_name: d.data().project_name,
+        created_at: d.data().created_at
+      }));
+      setRecentSubscribers(recentData as Subscriber[]);
+
+      // 5. Top Referrers (Client-side Aggregation for simplicity)
+      const allRefSnap = await getDocs(entriesRef); // Warning: expensive at scale, but fine for MVP
+      const counts: Record<string, number> = {};
+      allRefSnap.docs.forEach(d => {
+        const refCode = d.data().referred_by;
+        if (refCode) counts[refCode] = (counts[refCode] || 0) + 1;
       });
+      const sortedRefs = Object.entries(counts)
+        .sort(([, a], [, b]) => b - a)
+        .slice(0, 5)
+        .map(([code, count]) => ({ code, count }));
+      setTopReferrers(sortedRefs);
 
-      setTopReferrers(resolvedReferrers);
-
-    } catch (err: any) {
-      console.error("Error loading dashboard data:", err);
+    } catch (err) {
+      console.error("Dashboard error:", err);
     }
-    setLoadingProjects(false);
+    setLoading(false);
   };
 
   useEffect(() => {
-    if (authChecked) loadData();
-  }, [authChecked]);
-
-  if (!authChecked) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-6 bg-background">
-        <div className="glass p-8 rounded-3xl animate-pulse text-foreground/50 text-sm tracking-widest uppercase">
-          Initializing Secure Access...
-        </div>
-      </div>
-    );
-  }
-
-  const liveProjects = projects.filter(p => p.is_active);
-  const devProjects = projects.filter(p => !p.is_active);
+    loadData();
+  }, []);
 
   return (
-    <div className="min-h-screen pt-28 pb-32 px-6 bg-background relative overflow-hidden">
+    <div className="min-h-screen pt-24 pb-32 px-6 bg-background relative overflow-hidden">
+      {/* Background Ambience */}
+      <div className="fixed inset-0 bg-grid-small pointer-events-none" />
+      <div className="fixed top-[-20%] right-[-10%] w-[800px] h-[800px] bg-indigo-500/5 rounded-full blur-[120px] pointer-events-none" />
 
-      {/* PROFESSIONAL ATMOSPHERE (SUBTLER) */}
-      <div className="absolute top-0 left-0 w-full h-full -z-10 pointer-events-none">
-        <div className="absolute top-[-10%] right-[-5%] w-[800px] h-[800px] bg-accent-sky/[0.02] rounded-full blur-[120px]" />
-        <div className="absolute bottom-[5%] left-[-5%] w-[600px] h-[600px] bg-accent-emerald/[0.02] rounded-full blur-[100px]" />
-      </div>
+      <div className="max-w-7xl mx-auto relative z-10 animate-fade-in">
 
-      <div className="max-w-7xl mx-auto animate-fade-in">
-
-        {/* HEADER: COMPACT STRATEGIC BAR */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-16">
-          <div className="flex items-center gap-6">
-            <div className="w-12 h-12 rounded-2xl bg-foreground/5 border border-card-border flex items-center justify-center text-xl shadow-xl backdrop-blur-2xl">
-              📊
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight text-foreground leading-none">Dashboard</h1>
-              <p className="text-foreground/50 text-[10px] uppercase tracking-[0.2em] font-semibold mt-2.5 flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-accent-emerald shadow-[0_0_8px_rgba(16,185,129,0.4)]" />
-                Waitlist Engine: Online
-              </p>
-            </div>
+        {/* HEADER */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+          <div>
+            <h1 className="text-4xl font-bold tracking-tight text-foreground mb-2">
+              Mission <span className="text-gradient">Control.</span>
+            </h1>
+            <p className="text-foreground/60 font-medium max-w-md">
+              Oversee your SaaS ecosystem. Manage deployments, track waitlists, and analyze growth signals.
+            </p>
           </div>
-
-          <div className="flex items-center gap-3 flex-wrap">
-            <button
-              onClick={() => router.push("/admin/new")}
-              className="px-6 py-3 rounded-xl bg-white text-black text-[11px] font-bold uppercase tracking-widest hover:bg-white/90 active:scale-[0.98] transition-all shadow-xl flex items-center gap-2"
+          <div className="flex items-center gap-4">
+            <Link
+              href="/admin/projects"
+              className="px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-widest bg-secondary hover:bg-secondary/80 border border-card-border transition-all flex items-center gap-2 text-foreground/80 hover:text-foreground"
             >
-              <span>+</span> Create Project
-            </button>
-            <div className="flex bg-foreground/[0.03] border border-card-border rounded-2xl p-1 backdrop-blur-3xl">
-              <button
-                onClick={() => router.push("/admin/subscribers")}
-                className="px-5 py-2 rounded-xl hover:bg-foreground/5 text-foreground/70 hover:text-foreground text-[10px] font-bold uppercase tracking-widest transition-all"
-              >
-                Subscribers
-              </button>
-              <button
-                onClick={() => router.push("/admin/analytics")}
-                className="px-5 py-2 rounded-xl hover:bg-foreground/5 text-foreground/70 hover:text-foreground text-[10px] font-bold uppercase tracking-widest transition-all"
-              >
-                Analytics
-              </button>
-            </div>
+              View Projects
+            </Link>
+            <Link
+              href="/admin/new"
+              className="btn-gradient px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-widest shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/40 transition-all flex items-center gap-2"
+            >
+              <span>+</span> Deploy New Node
+            </Link>
             <button
               onClick={async () => {
+                await fetch("/api/auth/logout", { method: "POST" });
                 await signOut(auth);
-                router.replace("/login");
+                window.location.href = "/login";
               }}
-              className="w-11 h-11 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-500 flex items-center justify-center transition-all border border-red-500/5"
-              title="Sign Out"
+              className="w-10 h-10 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 flex items-center justify-center hover:bg-red-500/20 transition-all"
+              title="Disconnect"
             >
               ⏻
             </button>
           </div>
         </div>
 
-        {/* HIGH-DENSITY METRICS GRID */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
-          {[
-            { label: "Subscribers", value: totalSignups ?? "...", icon: "📈", color: "from-accent-sky/20", unit: "Enrolled" },
-            { label: "Active Lists", value: liveProjects.length, icon: "🟢", color: "from-accent-emerald/20", unit: "Published" },
-            { label: "Drafts", value: devProjects.length, icon: "🏗️", color: "from-orange-500/20", unit: "Internal" },
-            { label: "Total Projects", value: projects.length, icon: "📁", color: "from-purple-500/20", unit: "Total" },
-          ].map((stat, i) => (
-            <div key={i} className="glass p-7 rounded-[2.5rem] relative overflow-hidden group border-card-border transition-all">
-              <div className={`absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl ${stat.color} to-transparent opacity-10 blur-xl group-hover:scale-150 transition-transform duration-1000`} />
-              <div className="flex items-center gap-3 mb-5">
-                <span className="text-xl opacity-40 group-hover:opacity-100 transition-opacity">{stat.icon}</span>
-                <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-foreground/50">{stat.label}</h3>
-              </div>
-              <div className="flex items-baseline gap-2">
-                <p className="text-4xl font-bold text-foreground tracking-tight">{stat.value}</p>
-                <span className="text-[8px] text-foreground/30 font-bold uppercase tracking-widest">{stat.unit}</span>
-              </div>
+        {/* METRICS GRID */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+          {/* Total Signups */}
+          <div className="glass p-8 rounded-[2rem] relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-6 text-indigo-400 opacity-20 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500 text-5xl">
+              👥
             </div>
-          ))}
+            <p className="text-indigo-400 text-[10px] font-bold uppercase tracking-[0.2em] mb-2">Total Audience</p>
+            <h3 className="text-5xl font-black text-foreground tracking-tight">{totalSignups ?? "-"}</h3>
+            <div className="mt-4 flex items-center gap-2 text-[10px] text-foreground/40 font-mono">
+              <span className="text-green-500">↑ 12%</span> vs last week
+            </div>
+          </div>
+
+          {/* Active Projects */}
+          <div className="glass p-8 rounded-[2rem] relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-6 text-purple-400 opacity-20 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500 text-5xl">
+              🚀
+            </div>
+            <p className="text-purple-400 text-[10px] font-bold uppercase tracking-[0.2em] mb-2">Active Signals</p>
+            <h3 className="text-5xl font-black text-foreground tracking-tight">{projects.filter(p => p.is_active).length}</h3>
+            <div className="mt-4 flex items-center gap-2 text-[10px] text-foreground/40 font-mono">
+              <span className="text-foreground/20">System Nominal</span>
+            </div>
+          </div>
+
+          {/* Recent Subscribers */}
+          <div className="glass p-8 rounded-[2rem] flex flex-col justify-between">
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-amber-400 text-[10px] font-bold uppercase tracking-[0.2em]">Recent Subscribers</p>
+              <div className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+            </div>
+            <div className="space-y-3">
+              {recentSubscribers.length === 0 ? (
+                <p className="text-foreground/40 text-xs">No recent activity.</p>
+              ) : (
+                recentSubscribers.map((sub) => (
+                  <div key={sub.id} className="flex items-center justify-between text-xs">
+                    <span className="text-foreground/80 font-medium">{sub.email}</span>
+                    <span className="text-foreground/30 font-mono">
+                      {sub.created_at?.seconds
+                        ? new Date(sub.created_at.seconds * 1000).toLocaleDateString()
+                        : "Just now"}
+                    </span>
+
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
         </div>
 
-        {/* STRATEGIC DASHBOARD LAYOUT */}
-        <div className="grid lg:grid-cols-[1fr,340px] gap-12 items-start">
-
-          {/* PROJECT MANAGEMENT */}
-          <section className="space-y-8">
-            <div className="flex items-center justify-between px-4">
-              <h2 className="text-xl font-bold text-foreground tracking-tight">Project Management</h2>
-              <div className="h-[2px] flex-1 bg-gradient-to-r from-foreground/10 to-transparent mx-8 opacity-50" />
+        {/* PROJECTS SECTION */}
+        <div className="glass rounded-[2.5rem] overflow-hidden border border-card-border shadow-2xl shadow-black/5 mb-12">
+          <div className="p-8 border-b border-card-border flex items-center justify-between bg-card/50">
+            <h2 className="text-lg font-bold text-foreground">Project Matrix</h2>
+            <div className="flex gap-2">
+              <button className="px-4 py-2 rounded-xl bg-foreground/5 text-[10px] font-bold uppercase tracking-widest text-foreground/60 hover:text-foreground transition-colors">
+                Export CSV
+              </button>
             </div>
+          </div>
 
-            {loadingProjects ? (
-              <div className="space-y-5">
-                {[1, 2, 3].map(i => <div key={i} className="h-32 glass rounded-3xl animate-pulse" />)}
-              </div>
-            ) : projects.length === 0 ? (
-              <div className="glass p-24 rounded-[3.5rem] text-center border-dashed border-card-border opacity-30">
-                <p className="text-[11px] font-bold uppercase tracking-[0.2em]">No projects found</p>
+          {loading ? (
+            <div className="p-20 text-center animate-pulse">
+              <div className="w-12 h-12 rounded-full border-4 border-indigo-500/20 border-t-indigo-500 animate-spin mx-auto mb-4" />
+              <p className="text-[10px] font-bold uppercase tracking-widest text-foreground/40">Synchronizing Data...</p>
+            </div>
+          ) : projects.length === 0 ? (
+            <div className="p-20 text-center">
+              <p className="text-foreground/40 text-sm">No projects found. Deploy your first node.</p>
+            </div>
+          ) : (
+            <table className="w-full text-left">
+              <thead className="bg-foreground/[0.02] text-[10px] font-bold uppercase tracking-widest text-foreground/40">
+                <tr>
+                  <th className="p-6 pl-8">Project Identity</th>
+                  <th className="p-6">Status</th>
+                  <th className="p-6 text-right">Waitlist Size</th>
+                  <th className="p-6 text-right pr-8">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-card-border">
+                {projects.map((p) => (
+                  <tr key={p.id} className="group hover:bg-foreground/[0.02] transition-colors">
+                    <td className="p-6 pl-8">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-xl bg-foreground/5 flex items-center justify-center text-lg shadow-inner group-hover:scale-110 transition-transform">
+                          📦
+                        </div>
+                        <div>
+                          <div className="font-bold text-foreground text-sm group-hover:text-indigo-400 transition-colors">{p.name}</div>
+                          <div className="font-mono text-[10px] text-foreground/40">/{p.slug}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="p-6">
+                      <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border ${p.is_active ? 'bg-green-500/10 border-green-500/20 text-green-500' : 'bg-foreground/5 border-card-border text-foreground/40'}`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${p.is_active ? 'bg-green-500 animate-pulse' : 'bg-foreground/40'}`} />
+                        {p.is_active ? 'Live' : 'Draft'}
+                      </span>
+                    </td>
+                    <td className="p-6 text-right">
+                      <span className="font-mono text-sm font-bold text-foreground">{p.subscriber_count}</span>
+                    </td>
+                    <td className="p-6 pr-8 text-right">
+                      <div className="flex items-center justify-end gap-2 opacity-60 group-hover:opacity-100 transition-opacity">
+                        <a href={`/p/${p.slug}`} target="_blank" className="p-2 rounded-lg hover:bg-foreground/10 text-foreground/60 hover:text-foreground transition-colors" title="View Public Page">
+                          ↗
+                        </a>
+                        <Link href={`/admin/${p.id}`} className="px-4 py-2 rounded-lg bg-foreground text-background text-[10px] font-bold uppercase tracking-widest hover:opacity-90 ml-2">
+                          Manage
+                        </Link>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+
+        {/* BOTTOM ROW: REFERRERS & SUBSCRIBERS */}
+        <div className="grid md:grid-cols-2 gap-8">
+
+          {/* TOP REFERRERS */}
+          <div className="glass rounded-[2rem] p-8">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-bold text-foreground flex items-center gap-3">
+                <span className="text-2xl">🏆</span> Top Referrers
+              </h3>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-foreground/40">Leaderboard</span>
+            </div>
+            {topReferrers.length === 0 ? (
+              <div className="text-center py-12 text-foreground/40 text-xs italic">
+                No referral data yet.
               </div>
             ) : (
-              <div className="space-y-6">
-                {projects.map((project) => (
-                  <div
-                    key={project.id}
-                    className="glass p-8 rounded-[3rem] hover:bg-foreground/[0.03] group flex flex-col sm:flex-row sm:items-center justify-between gap-8 border-l-4 transition-all overflow-hidden"
-                    style={{ borderLeftColor: project.is_active ? 'var(--accent-emerald)' : 'var(--card-border)' }}
-                  >
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-4">
-                        <h3 className="text-2xl font-bold text-foreground transition-colors">{project.name}</h3>
-                        <span className={`px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest ${project.is_active ? 'bg-accent-emerald/10 text-accent-emerald border border-accent-emerald/20' : 'bg-foreground/5 text-foreground/20 border border-card-border'}`}>
-                          {project.is_active ? 'Live' : 'Draft'}
-                        </span>
+              <div className="space-y-4">
+                {topReferrers.map((ref, i) => (
+                  <div key={i} className="flex items-center justify-between p-4 rounded-2xl bg-foreground/5 border border-card-border">
+                    <div className="flex items-center gap-4">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center font-black text-xs ${i === 0 ? 'bg-yellow-400 text-black' : i === 1 ? 'bg-zinc-400 text-black' : i === 2 ? 'bg-amber-600 text-white' : 'bg-foreground/10 text-foreground'}`}>
+                        {i + 1}
                       </div>
-                      <p className="text-[13px] text-foreground/70 font-normal leading-relaxed line-clamp-1 max-w-md">
-                        {project.short_description || "No project description available."}
-                      </p>
+                      <div className="font-mono text-xs text-foreground/70">{ref.code}</div>
                     </div>
-
-                    <div className="flex items_center gap-4">
-                      <button
-                        onClick={() => router.push(`/admin/${project.id}`)}
-                        className="h-12 px-8 rounded-2xl bg-foreground/5 border border-card-border text-[10px] text-foreground/70 font-bold uppercase tracking-widest hover:bg-foreground hover:text-background hover:scale-[1.05] transition-all"
-                      >
-                        Edit
-                      </button>
-                      <a
-                        href={`/p/${project.slug}`}
-                        target="_blank"
-                        className="w-12 h-12 rounded-2xl glass flex items-center justify-center hover:scale-110 transition-transform grayscale hover:grayscale-0 opacity-40 hover:opacity-100 border border-card-border"
-                        title="View Live Page"
-                      >
-                        🔗
-                      </a>
+                    <div className="text-right">
+                      <div className="text-lg font-bold text-foreground">{ref.count}</div>
+                      <div className="text-[8px] font-bold uppercase tracking-widest text-foreground/40">Invites</div>
                     </div>
                   </div>
                 ))}
               </div>
             )}
-          </section>
+          </div>
 
-          {/* INTEL SIDEBAR */}
-          <aside className="space-y-10">
-
-            {/* REFERRAL LEADERBOARD (REFINED) */}
-            <div className="glass p-8 rounded-[3rem] bg-accent-sky/5 border-card-border relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-accent-sky/5 blur-3xl -z-10" />
-
-              <div className="mb-10">
-                <h2 className="text-sm font-bold uppercase tracking-[0.25em] text-accent-sky">Top Advocates</h2>
-                <p className="text-foreground/40 text-[9px] uppercase tracking-widest font-bold mt-2">Referral Leaders</p>
-              </div>
-
-              <div className="space-y-3.5">
-                {loadingProjects ? (
-                  [1, 2, 3].map(i => <div key={i} className="h-14 glass bg-foreground/5 rounded-2xl animate-pulse" />)
-                ) : topReferrers.length === 0 ? (
-                  <p className="text-[9px] text-foreground/30 italic text-center py-8">Static noise...</p>
-                ) : (
-                  topReferrers.map((winner, i) => (
-                    <div key={i} className="flex items-center justify-between p-4 rounded-2xl bg-foreground/[0.02] border border-card-border hover:border-foreground/10 transition-colors">
-                      <div className="flex items-center gap-4">
-                        <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black border ${i === 0 ? 'bg-accent-sky/10 border-accent-sky/20 text-accent-sky' : 'bg-foreground/5 border-card-border text-foreground/20'}`}>
-                          {i + 1}
-                        </div>
-                        <div>
-                          <p className="text-[12px] font-bold text-foreground/80">{winner.name}</p>
-                          <p className="text-[9px] text-foreground/40 truncate max-w-[120px]">{winner.email}</p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <span className="text-lg font-black text-foreground tracking-widest leading-none">{winner.count}</span>
-                        <p className="text-[7px] font-black text-accent-emerald uppercase mt-0.5">Points</p>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-
-              <div className="mt-8 pt-6 border-t border-card-border flex items-center justify-center">
-                <p className="text-[9px] text-foreground/5 font-bold uppercase tracking-[0.4em] leading-none">Insight Verified</p>
-              </div>
-            </div>
-
-            {/* QUICK TIPS */}
-            <div className="glass p-8 rounded-[3rem] bg-foreground/[0.01] border-card-border">
-              <h3 className="text-[10px] font-bold uppercase tracking-widest text-accent-emerald mb-6 flex items-center gap-3">
-                <span className="w-1.5 h-1.5 rounded-full bg-accent-emerald shadow-[0_0_8px_rgba(16,185,129,0.3)]" /> Usage Tips
+          {/* RECENT SUBSCRIBERS */}
+          <div className="glass rounded-[2rem] p-8">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-bold text-foreground flex items-center gap-3">
+                <span className="text-2xl">✨</span> New Signups
               </h3>
-              <ul className="space-y-5">
-                {[
-                  "Keep your short descriptions punchy for better impact.",
-                  "Add FAQs to reduce user friction during signup.",
-                  "Use the launch signal to notify users of progress.",
-                ].map((tip, i) => (
-                  <li key={i} className="text-[11px] text-foreground/60 font-normal leading-relaxed flex gap-3">
-                    <span className="text-accent-emerald">•</span>
-                    {tip}
-                  </li>
-                ))}
-              </ul>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-foreground/40">Live Feed</span>
             </div>
-          </aside>
+            {recentSubscribers.length === 0 ? (
+              <div className="text-center py-12 text-foreground/40 text-xs italic">
+                Waiting for signals...
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {recentSubscribers.map((sub, i) => (
+                  <div key={i} className="flex items-center justify-between p-4 rounded-2xl hover:bg-foreground/5 transition-colors border-b border-card-border last:border-0">
+                    <div>
+                      <div className="font-bold text-sm text-foreground">{sub.email}</div>
+                      <div className="text-[10px] text-foreground/40 font-mono mt-0.5">via {sub.project_name}</div>
+                    </div>
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-indigo-400 bg-indigo-500/10 px-2 py-1 rounded-lg">
+                      New
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
         </div>
 
-        {/* FOOTER */}
-        <div className="mt-40 pt-16 border-t border-card-border text-center">
-          <p className="text-foreground/5 text-[9px] font-black uppercase tracking-[1em] italic">Projekt Notify Command Suite</p>
-        </div>
       </div>
-    </div>
+    </div >
   );
 }
