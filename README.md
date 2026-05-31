@@ -35,8 +35,8 @@
 
 ```bash
 # Clone
-git clone https://github.com/justaman045/Saas-Waitlist.git
-cd Saas-Waitlist
+git clone https://github.com/justaman045/SaaSWaitlist.git
+cd SaaSWaitlist
 
 # Install
 npm install
